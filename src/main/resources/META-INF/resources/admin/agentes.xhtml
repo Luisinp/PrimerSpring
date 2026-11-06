@@ -1,0 +1,202 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="jakarta.faces.facelets"
+    template="../templates/template.xhtml">
+
+    <ui:define name="titulo">
+        Agentes - TravelZen
+    </ui:define>
+
+    <ui:define name="nombreUsuario">
+        #{loginMB.username}
+    </ui:define>
+
+    <ui:define name="nombreDePagina">
+        Agentes
+    </ui:define>
+
+    <!-- Vacío = esta página no muestra el bloque de bienvenida -->
+    <ui:define name="bienvenida"/>
+
+    <!-- IMPORTANTE: "contenido" debe llamarse igual que el <ui:insert name="..."> de templates/template.xhtml -->
+    <ui:define name="contenido">
+
+        <style>
+            .caja { background: #fff; padding: 18px; border-radius: 8px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,.12); margin-top: 14px; }
+            .filtros { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+            .filtros .derecha { margin-left: auto; }
+            .ok { color: #1f7a6d; }
+            .error { color: #b00020; }
+            .clave { background: #fff8e1; border: 1px solid #f0c36d; padding: 14px;
+                     border-radius: 6px; margin-top: 14px; }
+            .codigo { font-family: monospace; font-size: 22px; letter-spacing: 2px; font-weight: bold; }
+            .campo { display: block; margin: 12px 0 4px; font-size: 14px; }
+            .ancho { width: 100%; box-sizing: border-box; }
+        </style>
+
+        <h2>Agentes de viaje</h2>
+
+        <!-- ================= Lista ================= -->
+        <h:form id="frm">
+
+            <p:messages id="msgs" closable="true"/>
+
+            <h:panelGroup layout="block" styleClass="clave" rendered="#{agenteBean.claveTemporal != null}">
+                <p>Contraseña temporal de <strong>#{agenteBean.correoClave}</strong>:</p>
+                <p class="codigo">#{agenteBean.claveTemporal}</p>
+                <p>Anótala y entrégasela al agente. Por seguridad no se vuelve a mostrar.</p>
+                <p:commandButton value="Ya la anoté" action="#{agenteBean.cerrarClave}"
+                                 process="@this" update="@form"/>
+            </h:panelGroup>
+
+            <div class="caja">
+                <div class="filtros">
+                    <p:inputText value="#{agenteBean.filtroTexto}" size="34"
+                                 placeholder="Buscar por nombre, documento o correo"/>
+                    <p:selectOneMenu value="#{agenteBean.filtroEstado}">
+                        <f:selectItem itemValue="TODOS" itemLabel="Todos"/>
+                        <f:selectItem itemValue="ACTIVOS" itemLabel="Activos"/>
+                        <f:selectItem itemValue="INACTIVOS" itemLabel="Inactivos"/>
+                    </p:selectOneMenu>
+                    <p:commandButton value="Filtrar" action="#{agenteBean.filtrar}" ajax="false"/>
+                    <p:commandButton value="Limpiar" action="#{agenteBean.limpiar}" ajax="false" immediate="true"/>
+
+                    <span class="derecha">
+                        <p:commandButton value="Nuevo agente" icon="pi pi-plus"
+                                         action="#{agenteBean.nuevo}"
+                                         process="@this" update=":frmNuevo"
+                                         oncomplete="PF('dlgNuevo').show()"/>
+                    </span>
+                </div>
+            </div>
+
+            <div class="caja">
+                <p:dataTable id="tabla" var="a" value="#{agenteBean.agentes}" rows="10" paginator="true"
+                             emptyMessage="No hay agentes que coincidan con la búsqueda.">
+
+                    <p:column headerText="Nombre">
+                        <h:outputText value="#{a.nombreCompleto}"/>
+                    </p:column>
+                    <p:column headerText="Documento">
+                        <h:outputText value="#{a.documentoIdentidad}"/>
+                    </p:column>
+                    <p:column headerText="Correo">
+                        <h:outputText value="#{a.usuario.correo}"/>
+                    </p:column>
+                    <p:column headerText="Teléfono">
+                        <h:outputText value="#{a.telefono}"/>
+                    </p:column>
+                    <p:column headerText="Ingreso">
+                        <h:outputText value="#{a.fechaIngreso}">
+                            <f:convertDateTime type="localDate" pattern="dd/MM/yyyy"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Estado">
+                        <h:outputText value="#{a.usuario.activo ? 'Activo' : 'Inactivo'}"
+                                      styleClass="#{a.usuario.activo ? 'ok' : 'error'}"/>
+                    </p:column>
+                    <p:column headerText="Acciones">
+                        <p:commandButton value="Editar" styleClass="ui-button-sm"
+                                         action="#{agenteBean.editar(a)}"
+                                         process="@this" update=":frmNuevo"
+                                         oncomplete="PF('dlgNuevo').show()"/>
+                        <h:commandButton value="#{a.usuario.activo ? 'Desactivar' : 'Activar'}"
+                                         action="#{agenteBean.cambiarEstado(a)}"
+                                         onclick="return confirm('¿Confirmas el cambio de estado de este agente?');"/>
+                        <h:commandButton value="Restablecer clave"
+                                         action="#{agenteBean.restablecer(a)}"
+                                         onclick="return confirm('Se generará una contraseña temporal nueva. ¿Continuar?');"/>
+                        <h:commandButton value="Eliminar"
+                                         action="#{agenteBean.eliminar(a)}"
+                                         onclick="return confirm('¿Eliminar este agente definitivamente? Solo es posible si no tiene reservas ni pagos. Esta acción no se puede deshacer.');"/>
+                    </p:column>
+                </p:dataTable>
+            </div>
+
+        </h:form>
+
+        <!-- ================= Ventana "Nuevo agente" (encima de esta página) ================= -->
+        <p:dialog header="Nuevo agente de viajes" widgetVar="dlgNuevo" modal="true"
+                  resizable="false" draggable="false" width="480" closeOnEscape="true"
+                  appendTo="@(body)">
+
+            <h:form id="frmNuevo">
+
+                <p:messages id="msgsNuevo" severity="error" closable="true"/>
+
+                <!-- Formulario -->
+                <h:panelGroup layout="block" rendered="#{not agenteBean.creado}">
+
+                    <h3 style="margin-top:0">#{agenteBean.editando ? 'Editar agente' : 'Nuevo agente'}</h3>
+
+                    <label class="campo">Nombre completo *</label>
+                    <p:inputText value="#{agenteBean.nombre}" styleClass="ancho" required="true"
+                                 requiredMessage="El nombre es obligatorio"/>
+
+                    <label class="campo">Documento de identidad *</label>
+                    <p:inputText value="#{agenteBean.documento}" styleClass="ancho" required="true"
+                                 requiredMessage="El documento es obligatorio"/>
+
+                    <label class="campo">Correo electrónico (será su usuario) *</label>
+                    <p:inputText value="#{agenteBean.correo}" styleClass="ancho" required="true"
+                                 requiredMessage="El correo es obligatorio"
+                                 validatorMessage="El correo no tiene un formato válido">
+                        <f:validateRegex pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$"/>
+                    </p:inputText>
+
+                    <label class="campo">Teléfono</label>
+                    <p:inputText value="#{agenteBean.telefono}" styleClass="ancho"/>
+
+                    <label class="campo">Sexo</label>
+                    <p:selectOneMenu value="#{agenteBean.sexo}" style="width:100%">
+                        <f:selectItem itemValue="" itemLabel="— Selecciona —" noSelectionOption="true"/>
+                        <f:selectItem itemValue="M" itemLabel="Masculino"/>
+                        <f:selectItem itemValue="F" itemLabel="Femenino"/>
+                    </p:selectOneMenu>
+
+                    <label class="campo">Nacionalidad</label>
+                    <p:inputText value="#{agenteBean.nacionalidad}" styleClass="ancho"/>
+
+                    <label class="campo">Fecha de nacimiento (dd/mm/aaaa)</label>
+                    <p:datePicker value="#{agenteBean.fechaNacimiento}" pattern="dd/MM/yyyy"
+                                  appendTo="@(body)" style="width:100%" inputStyle="width:100%"/>
+
+                    <label class="campo">Fecha de ingreso *</label>
+                    <p:datePicker value="#{agenteBean.fechaIngreso}" pattern="dd/MM/yyyy" required="true"
+                                  requiredMessage="La fecha de ingreso es obligatoria"
+                                  appendTo="@(body)" style="width:100%" inputStyle="width:100%"/>
+
+                    <div style="margin-top:18px; text-align:right;">
+                        <p:commandButton value="Cancelar" type="button" styleClass="ui-button-secondary"
+                                         onclick="PF('dlgNuevo').hide()"/>
+                        <p:commandButton value="#{agenteBean.editando ? 'Guardar cambios' : 'Registrar agente'}" action="#{agenteBean.guardar}"
+                                         process="@form" update="@form :frm:tabla"/>
+                    </div>
+                </h:panelGroup>
+
+                <!-- Resultado: la contraseña temporal se muestra una sola vez -->
+                <h:panelGroup layout="block" rendered="#{agenteBean.creado}">
+                    <div class="clave">
+                        <p><strong>Agente registrado correctamente.</strong></p>
+                        <p>Usuario: <strong>#{agenteBean.correoNuevo}</strong></p>
+                        <p>Contraseña temporal:</p>
+                        <p class="codigo">#{agenteBean.claveNueva}</p>
+                        <p>Anótala y entrégasela al agente. Por seguridad no se vuelve a mostrar.</p>
+                    </div>
+                    <div style="margin-top:18px; text-align:right;">
+                        <p:commandButton value="Registrar otro" action="#{agenteBean.nuevo}"
+                                         process="@this" update="@form"/>
+                        <p:commandButton value="Cerrar" type="button" onclick="PF('dlgNuevo').hide()"/>
+                    </div>
+                </h:panelGroup>
+
+            </h:form>
+        </p:dialog>
+
+    </ui:define>
+
+</ui:composition>

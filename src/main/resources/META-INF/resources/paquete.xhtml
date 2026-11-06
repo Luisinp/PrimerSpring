@@ -1,0 +1,105 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:ui="jakarta.faces.facelets"
+    xmlns:sec="https://joinfaces.org/security"
+    template="templates/publico.xhtml">
+
+    <ui:define name="titulo">
+        Paquete turístico - TravelZen
+    </ui:define>
+
+    <ui:define name="metadata">
+        <f:viewParam name="id" value="#{detalleBean.id}"/>
+    </ui:define>
+
+    <ui:define name="contenido">
+        <div class="tz-contenido">
+
+            <h:panelGroup rendered="#{detalleBean.paquete != null}">
+
+                <nav class="tz-migas">
+                    <a href="home.xhtml">Catálogo</a> ›
+                    <a href="home.xhtml?destino=#{detalleBean.paquete.destino.id}"><h:outputText value="#{detalleBean.paquete.destino.nombre}"/></a> ›
+                    <h:outputText value="#{detalleBean.paquete.nombre}"/>
+                </nav>
+
+                <div class="tz-detalle">
+
+                    <div class="tz-detalle-foto">
+                        <h:panelGroup rendered="#{detalleBean.paquete.imagenPortada != null}">
+                            <img alt=""
+                                 src="#{facesContext.externalContext.requestContextPath}/media/paquetes/#{detalleBean.paquete.imagenPortada}"
+                                 onerror="this.style.display='none'"/>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" styleClass="tz-sinfoto" rendered="#{detalleBean.paquete.imagenPortada == null}">
+                            <i class="pi pi-image"></i>
+                        </h:panelGroup>
+                    </div>
+
+                    <div class="tz-panel">
+                        <span class="tz-lugar">
+                            <i class="pi pi-map-marker"></i>
+                            <h:outputText value="#{detalleBean.paquete.destino.nombre}, #{detalleBean.paquete.destino.pais}"/>
+                        </span>
+                        <h1><h:outputText value="#{detalleBean.paquete.nombre}"/></h1>
+
+                        <div class="tz-datos">
+                            <span class="tz-dato"><i class="pi pi-clock"></i>
+                                <h:outputText value=" #{detalleBean.paquete.duracionDias} días"/></span>
+                            <h:panelGroup rendered="#{detalleBean.disponible}">
+                                <span class="tz-dato"><i class="pi pi-users"></i>
+                                    <h:outputText value=" #{detalleBean.paquete.cuposDisponibles} cupos"/></span>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not detalleBean.disponible}">
+                                <span class="tz-dato tz-dato-alerta">Sin cupos</span>
+                            </h:panelGroup>
+                        </div>
+
+                        <div class="tz-precio-grande">
+                            <small>USD</small><h:outputText value="#{detalleBean.paquete.precio}">
+                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                            </h:outputText><small style="margin-left:8px">por persona</small>
+                        </div>
+
+                        <h:panelGroup rendered="#{detalleBean.disponible}">
+                            <a href="reservar.xhtml?id=#{detalleBean.paquete.id}"
+                               class="tz-btn tz-btn-primario tz-btn-bloque">Reservar este paquete</a>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{not detalleBean.disponible}">
+                            <span class="tz-btn tz-btn-bloque tz-btn-deshabilitado">Sin cupos disponibles</span>
+                        </h:panelGroup>
+
+                        <sec:authorize access="isAnonymous()">
+                            <p class="tz-nota" style="margin-top:14px">
+                                Para reservar te pediremos iniciar sesión. Si aún no tienes cuenta,
+                                podrás <a href="registro.xhtml">registrarte</a> en un minuto.
+                            </p>
+                        </sec:authorize>
+                    </div>
+                </div>
+
+                <div class="tz-texto">
+                    <h:panelGroup rendered="#{detalleBean.paquete.descripcion != null}">
+                        <h2>Descripción</h2>
+                        <div class="tz-parrafo"><h:outputText value="#{detalleBean.paquete.descripcion}"/></div>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{detalleBean.paquete.serviciosIncluidos != null}">
+                        <h2>Servicios incluidos</h2>
+                        <div class="tz-parrafo"><h:outputText value="#{detalleBean.paquete.serviciosIncluidos}"/></div>
+                    </h:panelGroup>
+                </div>
+
+            </h:panelGroup>
+
+            <h:panelGroup layout="block" styleClass="tz-vacio" rendered="#{detalleBean.paquete == null}">
+                <h3>#{detalleBean.sinId ? 'No se indicó qué paquete mostrar' : 'Este paquete no está disponible'}</h3>
+                <p>#{detalleBean.sinId ? 'Elige uno desde el catálogo.' : 'Puede estar oculto, sin publicar o desactivado.'}
+                    <a href="home.xhtml">Ver todos los paquetes</a>.</p>
+            </h:panelGroup>
+
+        </div>
+    </ui:define>
+
+</ui:composition>

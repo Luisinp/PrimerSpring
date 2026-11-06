@@ -1,0 +1,26 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:ui="jakarta.faces.facelets"
+    template="../templates/publico.xhtml">
+
+    <ui:define name="titulo">
+        Mi panel - TravelZen
+    </ui:define>
+
+    <ui:define name="contenido">
+        <div class="tz-contenido">
+            <div class="tz-panel" style="max-width:720px; margin:0 auto;">
+                <h1>Bienvenido a TravelZen</h1>
+                <p class="tz-parrafo">Sesión iniciada como
+                    <strong><h:outputText value="#{facesContext.externalContext.remoteUser}"/></strong></p>
+
+                <div class="tz-acciones-panel">
+                    <a class="tz-btn tz-btn-primario" href="mis-reservas.xhtml">Mis reservas</a>
+                    <a class="tz-btn tz-btn-borde" href="../home.xhtml">Ver catálogo</a>
+                </div>
+            </div>
+        </div>
+    </ui:define>
+
+</ui:composition>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core">
+<h:head>
+    <meta charset="UTF-8"/>
+    <title>Registro - TravelZen</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f3f6f9; margin: 0; }
+        .caja { max-width: 420px; margin: 40px auto; background: #fff; padding: 28px;
+                border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+        h2 { margin-top: 0; }
+        label { display: block; margin: 12px 0 4px; font-size: 14px; }
+        input[type=text], input[type=password] { width: 100%; padding: 8px; box-sizing: border-box; }
+        .btn { margin-top: 18px; width: 100%; padding: 10px; background: #1f7a6d; color: #fff;
+               border: 0; border-radius: 4px; font-size: 15px; cursor: pointer; }
+        .error { color: #b00020; font-size: 13px; }
+        .ok { color: #1f7a6d; }
+        ul.error { padding-left: 18px; }
+    </style>
+</h:head>
+<h:body>
+    <div class="caja">
+        <h2>Crear cuenta</h2>
+
+        <h:messages errorClass="error" globalOnly="false" layout="list" styleClass="error"/>
+
+        <h:form rendered="#{not registroBean.registrado}">
+            <label>Nombre completo</label>
+            <h:inputText value="#{registroBean.nombre}" required="true"
+                         requiredMessage="El nombre es obligatorio"/>
+
+            <label>Documento de identidad</label>
+            <h:inputText value="#{registroBean.documento}" required="true"
+                         requiredMessage="El documento es obligatorio"/>
+
+            <label>Correo electrónico</label>
+            <h:inputText value="#{registroBean.correo}" required="true"
+                         requiredMessage="El correo es obligatorio"/>
+
+            <label>Teléfono (opcional)</label>
+            <h:inputText value="#{registroBean.telefono}"/>
+
+            <label>Nacionalidad</label>
+            <h:inputText value="#{registroBean.nacionalidad}" required="true"
+                         requiredMessage="La nacionalidad es obligatoria"/>
+
+            <label>Contraseña (mínimo 8 caracteres)</label>
+            <h:inputSecret value="#{registroBean.contrasena}" required="true"
+                           requiredMessage="La contraseña es obligatoria"/>
+
+            <label>Confirmar contraseña</label>
+            <h:inputSecret value="#{registroBean.confirmacion}" required="true"
+                           requiredMessage="Debes confirmar la contraseña"/>
+
+            <h:commandButton value="Registrarme" action="#{registroBean.registrar}" styleClass="btn"/>
+        </h:form>
+
+        <h:panelGroup rendered="#{registroBean.registrado}">
+            <p class="ok">¡Cuenta creada correctamente! Ya puedes iniciar sesión.</p>
+        </h:panelGroup>
+
+        <p>¿Ya tienes cuenta? <h:link value="Inicia sesión" outcome="login"/></p>
+    </div>
+</h:body>
+</html>

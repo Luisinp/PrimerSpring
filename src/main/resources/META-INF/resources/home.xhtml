@@ -1,0 +1,103 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:ui="jakarta.faces.facelets"
+    template="templates/publico.xhtml">
+
+    <ui:define name="titulo">
+        TravelZen - Paquetes turísticos internacionales
+    </ui:define>
+
+    <ui:define name="metadata">
+        <f:viewParam name="q" value="#{catalogoBean.q}"/>
+        <f:viewParam name="destino" value="#{catalogoBean.destino}"/>
+    </ui:define>
+
+    <ui:define name="contenido">
+
+        <section class="tz-hero">
+            <h1>Tu próximo viaje empieza aquí</h1>
+            <p>Paquetes turísticos internacionales con todo incluido. Elige tu destino y reserva con TravelZen.</p>
+        </section>
+
+        <div class="tz-contenido">
+
+            <!-- Filtro por destino -->
+            <h:panelGroup layout="block" styleClass="tz-chips" rendered="#{not empty catalogoBean.destinos}">
+                <a href="home.xhtml" class="tz-chip #{catalogoBean.destino == null ? 'tz-chip-activo' : ''}">Todos los destinos</a>
+                <ui:repeat value="#{catalogoBean.destinos}" var="d">
+                    <a href="home.xhtml?destino=#{d.id}"
+                       class="tz-chip #{catalogoBean.destino eq d.id ? 'tz-chip-activo' : ''}">
+                        <h:outputText value="#{d.nombre}"/>
+                    </a>
+                </ui:repeat>
+            </h:panelGroup>
+
+            <!-- Resultado de búsqueda -->
+            <h:panelGroup layout="block" styleClass="tz-nota" rendered="#{catalogoBean.conBusqueda}">
+                Resultados para «<h:outputText value="#{catalogoBean.q}"/>» ·
+                <a href="home.xhtml">ver todos los paquetes</a>
+            </h:panelGroup>
+
+            <!-- Tarjetas -->
+            <h:panelGroup layout="block" styleClass="tz-grid" rendered="#{not empty catalogoBean.paquetes}">
+                <ui:repeat value="#{catalogoBean.paquetes}" var="p">
+                    <article class="tz-card">
+
+                        <a href="paquete.xhtml?id=#{p.id}" class="tz-foto">
+                            <h:panelGroup rendered="#{p.imagenPortada != null}">
+                                <img alt=""
+                                     src="#{facesContext.externalContext.requestContextPath}/media/paquetes/#{p.imagenPortada}"
+                                     onerror="this.style.display='none'"/>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="tz-sinfoto" rendered="#{p.imagenPortada == null}">
+                                <i class="pi pi-image"></i>
+                            </h:panelGroup>
+
+                            <span class="tz-etiqueta"><h:outputText value="#{p.duracionDias} días"/></span>
+                            <h:panelGroup rendered="#{p.cuposDisponibles le 0}">
+                                <span class="tz-etiqueta tz-etiqueta-agotado">Agotado</span>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{p.cuposDisponibles gt 0 and p.cuposDisponibles le 5}">
+                                <span class="tz-etiqueta tz-etiqueta-alerta">¡Últimos cupos!</span>
+                            </h:panelGroup>
+                        </a>
+
+                        <div class="tz-cuerpo">
+                            <span class="tz-lugar">
+                                <i class="pi pi-map-marker"></i>
+                                <h:outputText value="#{p.destino.nombre}, #{p.destino.pais}"/>
+                            </span>
+                            <h3 class="tz-titulo">
+                                <a href="paquete.xhtml?id=#{p.id}"><h:outputText value="#{p.nombre}"/></a>
+                            </h3>
+                            <p class="tz-resumen"><h:outputText value="#{p.descripcion}"/></p>
+
+                            <div class="tz-pie">
+                                <div>
+                                    <span class="tz-desde">Desde, por persona</span>
+                                    <span class="tz-precio">
+                                        <small>USD</small><h:outputText value="#{p.precio}">
+                                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                        </h:outputText>
+                                    </span>
+                                </div>
+                                <a href="paquete.xhtml?id=#{p.id}" class="tz-btn tz-btn-primario">Ver paquete</a>
+                            </div>
+                        </div>
+
+                    </article>
+                </ui:repeat>
+            </h:panelGroup>
+
+            <!-- Sin resultados -->
+            <h:panelGroup layout="block" styleClass="tz-vacio" rendered="#{empty catalogoBean.paquetes}">
+                <h3>Aún no hay paquetes que coincidan</h3>
+                <p>Prueba con otro destino o <a href="home.xhtml">mira todos los paquetes</a>.</p>
+            </h:panelGroup>
+
+        </div>
+    </ui:define>
+
+</ui:composition>

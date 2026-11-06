@@ -1,0 +1,174 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="jakarta.faces.facelets"
+    template="../templates/template.xhtml">
+
+    <ui:define name="titulo">
+        Clientes - TravelZen
+    </ui:define>
+
+    <ui:define name="nombreUsuario">
+        #{loginMB.username}
+    </ui:define>
+
+    <ui:define name="nombreDePagina">
+        Clientes
+    </ui:define>
+
+    <!-- Vacío = esta página no muestra el bloque de bienvenida -->
+    <ui:define name="bienvenida"/>
+
+    <ui:define name="contenido">
+
+        <style>
+            .caja { background: #fff; padding: 18px; border-radius: 8px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,.12); margin-top: 14px; }
+            .filtros { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+            .filtros .derecha { margin-left: auto; }
+            .ok { color: #1f7a6d; }
+            .error { color: #b00020; }
+            .campo { display: block; margin: 12px 0 4px; font-size: 14px; }
+            .ancho { width: 100%; box-sizing: border-box; }
+            .nota { font-size: 12px; color: #666; margin-top: 4px; }
+        </style>
+
+        <h2>Clientes</h2>
+
+        <!-- ================= Lista ================= -->
+        <h:form id="frm">
+
+            <p:messages id="msgs" closable="true"/>
+
+            <div class="caja">
+                <div class="filtros">
+                    <p:inputText value="#{clienteBean.filtroTexto}" size="34"
+                                 placeholder="Buscar por nombre, documento o correo"/>
+                    <p:selectOneMenu value="#{clienteBean.filtroEstado}">
+                        <f:selectItem itemValue="TODOS" itemLabel="Todos los estados"/>
+                        <f:selectItem itemValue="ACTIVOS" itemLabel="Activos"/>
+                        <f:selectItem itemValue="INACTIVOS" itemLabel="Inactivos"/>
+                    </p:selectOneMenu>
+                    <p:selectOneMenu value="#{clienteBean.filtroCuenta}">
+                        <f:selectItem itemValue="TODOS" itemLabel="Con o sin cuenta"/>
+                        <f:selectItem itemValue="CON" itemLabel="Con cuenta web"/>
+                        <f:selectItem itemValue="SIN" itemLabel="Sin cuenta web"/>
+                    </p:selectOneMenu>
+                    <p:commandButton value="Filtrar" action="#{clienteBean.filtrar}" ajax="false"/>
+                    <p:commandButton value="Limpiar" action="#{clienteBean.limpiar}" ajax="false" immediate="true"/>
+
+                    <span class="derecha">
+                        <p:commandButton value="Nuevo cliente" icon="pi pi-plus"
+                                         action="#{clienteBean.nuevo}"
+                                         process="@this" update=":frmCliente"
+                                         oncomplete="PF('dlgCliente').show()"/>
+                    </span>
+                </div>
+            </div>
+
+            <div class="caja">
+                <p:dataTable id="tabla" var="c" value="#{clienteBean.clientes}" rows="10" paginator="true"
+                             emptyMessage="No hay clientes que coincidan con la búsqueda.">
+
+                    <p:column headerText="Nombre">
+                        <h:outputText value="#{c.nombreCompleto}"/>
+                    </p:column>
+                    <p:column headerText="Documento">
+                        <h:outputText value="#{c.documentoIdentidad}"/>
+                    </p:column>
+                    <p:column headerText="Correo">
+                        <h:outputText value="#{c.correo}"/>
+                    </p:column>
+                    <p:column headerText="Teléfono">
+                        <h:outputText value="#{c.telefono}"/>
+                    </p:column>
+                    <p:column headerText="Nacionalidad">
+                        <h:outputText value="#{c.nacionalidad}"/>
+                    </p:column>
+                    <p:column headerText="Cuenta web">
+                        <h:outputText value="#{c.usuario != null ? 'Sí' : 'No'}"/>
+                    </p:column>
+                    <p:column headerText="Estado">
+                        <h:outputText value="#{c.activo ? 'Activo' : 'Inactivo'}"
+                                      styleClass="#{c.activo ? 'ok' : 'error'}"/>
+                    </p:column>
+                    <p:column headerText="Acciones">
+                        <p:commandButton value="Editar" styleClass="ui-button-sm"
+                                         action="#{clienteBean.editar(c)}"
+                                         process="@this" update=":frmCliente"
+                                         oncomplete="PF('dlgCliente').show()"/>
+                        <h:commandButton value="#{c.activo ? 'Desactivar' : 'Activar'}"
+                                         action="#{clienteBean.cambiarEstado(c)}"
+                                         onclick="return confirm('¿Confirmas el cambio de estado de este cliente?');"/>
+                        <h:commandButton value="Eliminar"
+                                         action="#{clienteBean.eliminar(c)}"
+                                         onclick="return confirm('¿Eliminar este cliente definitivamente? Solo es posible si no tiene reservas ni movimientos. Esta acción no se puede deshacer.');"/>
+                    </p:column>
+                </p:dataTable>
+            </div>
+
+        </h:form>
+
+        <!-- ================= Ventana crear / editar (encima de esta página) ================= -->
+        <p:dialog header="Cliente" widgetVar="dlgCliente" modal="true"
+                  resizable="false" draggable="false" width="480" closeOnEscape="true"
+                  appendTo="@(body)">
+
+            <h:form id="frmCliente">
+
+                <p:messages id="msgsCliente" severity="error" closable="true"/>
+
+                <h3 style="margin-top:0">#{clienteBean.editando ? 'Editar cliente' : 'Nuevo cliente (mostrador)'}</h3>
+
+                <label class="campo">Nombre completo *</label>
+                <p:inputText value="#{clienteBean.nombre}" styleClass="ancho" required="true"
+                             requiredMessage="El nombre es obligatorio"/>
+
+                <label class="campo">Documento de identidad *</label>
+                <p:inputText value="#{clienteBean.documento}" styleClass="ancho" required="true"
+                             requiredMessage="El documento es obligatorio"/>
+
+                <label class="campo">Correo electrónico *</label>
+                <p:inputText value="#{clienteBean.correo}" styleClass="ancho" required="true"
+                             disabled="#{clienteBean.tieneCuenta}"
+                             requiredMessage="El correo es obligatorio"
+                             validatorMessage="El correo no tiene un formato válido">
+                    <f:validateRegex pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$"/>
+                </p:inputText>
+                <h:panelGroup layout="block" styleClass="nota" rendered="#{clienteBean.tieneCuenta}">
+                    Este cliente tiene cuenta web: su correo es también su usuario y no se modifica aquí.
+                </h:panelGroup>
+
+                <label class="campo">Teléfono</label>
+                <p:inputText value="#{clienteBean.telefono}" styleClass="ancho"/>
+
+                <label class="campo">Sexo</label>
+                <p:selectOneMenu value="#{clienteBean.sexo}" style="width:100%">
+                    <f:selectItem itemValue="" itemLabel="— Selecciona —" noSelectionOption="true"/>
+                    <f:selectItem itemValue="M" itemLabel="Masculino"/>
+                    <f:selectItem itemValue="F" itemLabel="Femenino"/>
+                </p:selectOneMenu>
+
+                <label class="campo">Nacionalidad</label>
+                <p:inputText value="#{clienteBean.nacionalidad}" styleClass="ancho"/>
+
+                <label class="campo">Fecha de nacimiento (dd/mm/aaaa)</label>
+                <p:datePicker value="#{clienteBean.fechaNacimiento}" pattern="dd/MM/yyyy"
+                              appendTo="@(body)" style="width:100%" inputStyle="width:100%"/>
+
+                <div style="margin-top:18px; text-align:right;">
+                    <p:commandButton value="Cancelar" type="button" styleClass="ui-button-secondary"
+                                     onclick="PF('dlgCliente').hide()"/>
+                    <p:commandButton value="#{clienteBean.editando ? 'Guardar cambios' : 'Registrar cliente'}"
+                                     action="#{clienteBean.guardar}"
+                                     process="@form" update="@form"/>
+                </div>
+
+            </h:form>
+        </p:dialog>
+
+    </ui:define>
+
+</ui:composition>

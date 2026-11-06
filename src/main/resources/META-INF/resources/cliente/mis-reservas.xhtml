@@ -1,0 +1,75 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:ui="jakarta.faces.facelets"
+    template="../templates/publico.xhtml">
+
+    <ui:define name="titulo">
+        Mis reservas - TravelZen
+    </ui:define>
+
+    <ui:define name="contenido">
+        <div class="tz-contenido">
+
+            <h2 class="tz-seccion">Mis reservas</h2>
+
+            <!-- Aviso al volver de reservar: ?nueva=CODIGO -->
+            <h:panelGroup layout="block" styleClass="tz-exito" rendered="#{param.nueva != null}">
+                ¡Tu reserva <strong><h:outputText value="#{param.nueva}"/></strong> fue registrada!
+                Quedó pendiente: la agencia la confirmará y coordinará el pago contigo.
+            </h:panelGroup>
+
+            <ui:repeat value="#{misReservasBean.reservas}" var="r">
+                <article class="tz-reserva">
+
+                    <div class="tz-reserva-cab">
+                        <span class="tz-codigo"><h:outputText value="#{r.codigoUnico}"/></span>
+                        <span class="tz-estado tz-estado-#{r.estado}">
+                            <h:outputText value="#{r.estado eq 'PENDIENTE' ? 'Pendiente de confirmación' : (r.estado eq 'CONFIRMADA' ? 'Confirmada' : (r.estado eq 'CANCELADA' ? 'Cancelada' : 'Finalizada'))}"/>
+                        </span>
+                    </div>
+
+                    <h3 class="tz-titulo" style="margin:0 0 8px">
+                        <a href="../paquete.xhtml?id=#{r.paquete.id}"><h:outputText value="#{r.paquete.nombre}"/></a>
+                    </h3>
+
+                    <div class="tz-reserva-datos">
+                        <span><i class="pi pi-map-marker"></i>
+                            <strong><h:outputText value="#{r.itinerario.destino}"/></strong></span>
+                        <span><i class="pi pi-calendar"></i>
+                            <h:outputText value="#{r.itinerario.fechaInicio}">
+                                <f:convertDateTime type="localDate" pattern="dd/MM/yyyy"/>
+                            </h:outputText>
+                            al
+                            <h:outputText value="#{r.itinerario.fechaFin}">
+                                <f:convertDateTime type="localDate" pattern="dd/MM/yyyy"/>
+                            </h:outputText></span>
+                        <span><i class="pi pi-users"></i>
+                            <h:outputText value="#{r.pasajeros.size()} pasajero(s)"/></span>
+                        <span>Total: <strong>USD
+                            <h:outputText value="#{r.montoTotal}">
+                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                            </h:outputText></strong></span>
+                        <span>Pago: <strong>
+                            <h:outputText value="#{r.estadoPago eq 'PENDIENTE' ? 'Pendiente' : (r.estadoPago eq 'PARCIAL' ? 'Parcial' : 'Completado')}"/>
+                        </strong></span>
+                        <span>Registrada el
+                            <h:outputText value="#{r.fechaRegistro}">
+                                <f:convertDateTime type="localDateTime" pattern="dd/MM/yyyy HH:mm"/>
+                            </h:outputText></span>
+                    </div>
+
+                </article>
+            </ui:repeat>
+
+            <h:panelGroup layout="block" styleClass="tz-vacio" rendered="#{empty misReservasBean.reservas}">
+                <h3>Aún no tienes reservas</h3>
+                <p>Mira los paquetes y reserva tu próximo viaje.
+                    <a href="../home.xhtml">Ir al catálogo</a></p>
+            </h:panelGroup>
+
+        </div>
+    </ui:define>
+
+</ui:composition>

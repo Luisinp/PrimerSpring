@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:sec="https://joinfaces.org/security"
+      xmlns:pe="primefaces.extensions">
+
+<h:head>
+    <title><ui:insert name="titulo"/></title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="mobile-web-app-capable" content="yes"/>
+    <h:outputStylesheet library="assets" name="css/primeflex.css"/>
+    <h:outputStylesheet library="assets" name="css/primeicons.css"/>
+    <h:outputStylesheet library="assets" name="css/stylle.css"/>
+</h:head>
+<h:outputStylesheet library="assets" name="css/stylle.css?v=1.1"/>
+<h:body>
+    <pe:layout fullPage="true">
+        <pe:layoutPane id="layoutPane" position="center">
+            <h:form id="form">
+                <div class="ui-fluid center">
+                    <p:menubar>
+                        <p:menuitem value="Inicio" outcome="/home.xhtml" />
+                        <p:menuitem value="Nosotros" outcome="/nosotros.xhtml" />
+                        <p:menuitem value="Preguntas" outcome="/preguntas.xhtml" />
+                        <p:menuitem value="Control" outcome="/control.xhtml" />
+
+                        <!--rederisacion de USuario verificacion de autorizacion PERO NO LO OCULTA para usamos rendered -->
+                        <!-- Renderizado condicional usando autoridades -->
+                        <sec:authorize access="hasAuthority('ROLE_ADMIN')">
+                            <p:menuitem value="SOLO ADMIN" outcome="/admin/home-admin.xhtml" />
+                        </sec:authorize>
+
+                        <sec:authorize access="hasAuthority('ROLE_ADMIN')">
+                            <p:menuitem value="AGENTES" outcome="/admin/agentes.xhtml" />
+                        </sec:authorize>
+
+                        <sec:authorize access="hasAnyAuthority('ROLE_ADMIN','ROLE_AGENTE')">
+                            <p:menuitem value="CLIENTES" outcome="/operario/clientes.xhtml" />
+                        </sec:authorize>
+
+                        <sec:authorize access="hasAnyAuthority('ROLE_ADMIN','ROLE_AGENTE')">
+                            <p:menuitem value="PAQUETES" outcome="/operario/paquetes.xhtml" />
+                        </sec:authorize>
+
+                        <sec:authorize access="hasAnyAuthority('ROLE_ADMIN','ROLE_AGENTE')">
+                            <p:menuitem value="DESTINOS" outcome="/operario/destinos.xhtml" />
+                        </sec:authorize>
+
+                        <sec:authorize access="hasAuthority('ROLE_AGENTE')">
+                             <p:menuitem value="SOLO AGENTE" outcome="/operario/home-operario.xhtml" />
+                        </sec:authorize>
+
+                        <sec:authorize access="hasAuthority('ROLE_CLIENTE')">
+                             <p:menuitem value="MI PANEL" outcome="/cliente/home-cliente.xhtml" />
+                        </sec:authorize>
+                        <p:menuitem value="Cerrar Sesion" url="/logout" />
+                    </p:menubar>
+                </div>
+            </h:form>
+        </pe:layoutPane>
+    </pe:layout>
+    <div class="px-4 py-1 md:px-6 lg:px-8">
+        <!-- Bloque de bienvenida: se muestra por defecto. Una página puede ocultarlo
+             definiendo <ui:define name="bienvenida"/> vacío. -->
+        <ui:insert name="bienvenida">
+        <div class="flex align-items-center justify-content-center">
+            <section class="surface-section px-4 py-5 md:px-6 lg:px-8 w-full">
+                <div class="flex flex-column lg:flex-row gap-3 justify-content-between lg:align-items-center border-primary py-5"
+                     style="border-top: 7px solid">
+                    <div class="flex flex-column gap-2">
+                        <div class="flex align-items-center gap-2">
+                            <h1 class="m-0 font-semibold text-900 text-xl line-height-3">
+                                Bienvenido <ui:insert name="nombreUsuario"/>
+                            </h1>
+                        </div>
+                        <p class="mb-0 mt-0 text-base text-600">
+                            Estas dentro del home. <ui:insert name="nombreDePagina"/>
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </div>
+        </ui:insert>
+
+        <!-- Zona opcional para el contenido de cada página (agentes, clientes, catálogo...).
+             Si una página no define "contenido", aquí no se muestra nada. -->
+        <div class="px-4 pt-0 pb-3 md:px-6 lg:px-8">
+            <ui:insert name="contenido"/>
+        </div>
+    </div>
+</h:body>
+</html>

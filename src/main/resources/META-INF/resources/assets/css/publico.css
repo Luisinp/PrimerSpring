@@ -1,0 +1,165 @@
+/* TravelZen - sitio público (catálogo, detalle, reserva) */
+:root {
+    --tz-azul: #0b3c5d;
+    --tz-verde: #1d7874;
+    --tz-naranja: #f28c28;
+    --tz-fondo: #f4f7fa;
+    --tz-texto: #1f2a37;
+    --tz-gris: #6b7785;
+}
+body { margin: 0; background: var(--tz-fondo); color: var(--tz-texto);
+       font-family: "Segoe UI", Roboto, Arial, sans-serif; }
+a { text-decoration: none; color: inherit; }
+ 
+/* ---------- Barra superior ---------- */
+.tz-barra { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 24px;
+            padding: 12px 5%; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+.tz-logo { font-size: 1.5rem; font-weight: 800; color: var(--tz-azul); display: flex;
+           align-items: center; gap: 8px; white-space: nowrap; }
+.tz-logo i { color: var(--tz-naranja); }
+.tz-buscar { flex: 1; max-width: 560px; display: flex; border: 2px solid var(--tz-naranja);
+             border-radius: 999px; overflow: hidden; background: #fff; }
+.tz-buscar input[type=text] { flex: 1; border: 0; outline: 0; padding: 10px 18px;
+                              font-size: .95rem; background: transparent; }
+.tz-buscar input[type=submit] { border: 0; cursor: pointer; padding: 0 24px; font-weight: 600;
+                                color: #fff; background: linear-gradient(90deg, #ffa43c, var(--tz-naranja)); }
+.tz-acciones { margin-left: auto; display: flex; align-items: center; gap: 16px; white-space: nowrap; }
+.tz-enlace { font-weight: 500; color: var(--tz-texto); }
+.tz-enlace:hover { color: var(--tz-verde); }
+ 
+/* ---------- Botones ---------- */
+.tz-btn { display: inline-block; padding: 10px 22px; border-radius: 999px; font-weight: 600;
+          cursor: pointer; border: 2px solid transparent; transition: .2s; text-align: center; }
+.tz-btn-primario { background: var(--tz-naranja); color: #fff; }
+.tz-btn-primario:hover { background: #e07b17; }
+.tz-btn-borde { border-color: var(--tz-azul); color: var(--tz-azul); background: #fff; }
+.tz-btn-borde:hover { background: var(--tz-azul); color: #fff; }
+.tz-btn-bloque { display: block; }
+.tz-btn-deshabilitado { background: #cfd6dd; color: #8a96a3; cursor: not-allowed; }
+ 
+/* ---------- Portada ---------- */
+.tz-hero { background: linear-gradient(135deg, var(--tz-azul), var(--tz-verde) 60%, #5fb49c);
+           color: #fff; padding: 64px 5% 56px; }
+.tz-hero h1 { margin: 0 0 10px; font-size: 2.4rem; line-height: 1.15; }
+.tz-hero p { margin: 0; font-size: 1.1rem; opacity: .92; max-width: 640px; }
+ 
+.tz-contenido { padding: 28px 5% 48px; max-width: 1300px; margin: 0 auto; }
+.tz-nota { color: var(--tz-gris); font-size: .92rem; margin: 0 0 16px; }
+.tz-nota a { color: var(--tz-verde); font-weight: 600; }
+ 
+.tz-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+.tz-chip { padding: 8px 18px; border-radius: 999px; background: #fff; border: 1px solid #d7dee6;
+           font-size: .92rem; font-weight: 500; transition: .15s; }
+.tz-chip:hover { border-color: var(--tz-verde); color: var(--tz-verde); }
+.tz-chip-activo { background: var(--tz-azul); color: #fff; border-color: var(--tz-azul); }
+.tz-chip-activo:hover { color: #fff; }
+ 
+/* ---------- Tarjetas ---------- */
+.tz-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(285px, 1fr)); gap: 24px; }
+.tz-card { background: #fff; border-radius: 16px; overflow: hidden; display: flex;
+           flex-direction: column; box-shadow: 0 2px 10px rgba(0,0,0,.08);
+           transition: transform .2s, box-shadow .2s; }
+.tz-card:hover { transform: translateY(-5px); box-shadow: 0 12px 28px rgba(0,0,0,.16); }
+.tz-foto { position: relative; display: block; height: 210px; overflow: hidden;
+           background: linear-gradient(135deg, #dbe9f1, #b9d9d3); }
+.tz-foto img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+.tz-card:hover .tz-foto img { transform: scale(1.06); }
+.tz-sinfoto { width: 100%; height: 100%; display: flex; align-items: center;
+              justify-content: center; color: #7fa3b3; font-size: 3rem; }
+.tz-etiqueta { position: absolute; top: 12px; left: 12px; padding: 5px 12px; border-radius: 999px;
+               font-size: .78rem; font-weight: 700; background: rgba(11,60,93,.9); color: #fff; }
+.tz-etiqueta-alerta { left: auto; right: 12px; background: var(--tz-naranja); }
+.tz-etiqueta-agotado { left: auto; right: 12px; background: #8a96a3; }
+.tz-cuerpo { padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.tz-lugar { color: var(--tz-verde); font-size: .85rem; font-weight: 600;
+            display: flex; align-items: center; gap: 6px; }
+.tz-titulo { margin: 0; font-size: 1.15rem; line-height: 1.3; }
+.tz-resumen { margin: 0; color: var(--tz-gris); font-size: .9rem; line-height: 1.5;
+              display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tz-pie { margin-top: auto; padding-top: 12px; display: flex; align-items: flex-end;
+          justify-content: space-between; gap: 10px; border-top: 1px solid #edf1f5; }
+.tz-desde { font-size: .75rem; color: var(--tz-gris); display: block; }
+.tz-precio { font-size: 1.5rem; font-weight: 800; color: var(--tz-azul); }
+.tz-precio small { font-size: .8rem; font-weight: 600; color: var(--tz-gris); margin-right: 4px; }
+.tz-vacio { text-align: center; padding: 64px 16px; color: var(--tz-gris);
+            background: #fff; border-radius: 16px; }
+.tz-vacio a { color: var(--tz-verde); font-weight: 600; }
+ 
+/* ---------- Detalle del paquete ---------- */
+.tz-migas { font-size: .88rem; color: var(--tz-gris); margin-bottom: 16px; }
+.tz-migas a { color: var(--tz-verde); }
+.tz-detalle { display: grid; grid-template-columns: 1.25fr 1fr; gap: 32px; align-items: start; }
+.tz-detalle-foto { border-radius: 18px; overflow: hidden; height: 420px;
+                   background: linear-gradient(135deg, #dbe9f1, #b9d9d3);
+                   box-shadow: 0 4px 18px rgba(0,0,0,.12); }
+.tz-detalle-foto img { width: 100%; height: 100%; object-fit: cover; }
+.tz-panel { background: #fff; border-radius: 18px; padding: 28px; box-shadow: 0 4px 18px rgba(0,0,0,.08); }
+.tz-panel h1 { margin: 6px 0 14px; font-size: 1.8rem; line-height: 1.2; }
+.tz-datos { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 18px; }
+.tz-dato { background: #eef5f4; color: var(--tz-verde); padding: 7px 14px; border-radius: 999px;
+           font-size: .88rem; font-weight: 600; }
+.tz-dato-alerta { background: #fff1e0; color: #b9651a; }
+.tz-precio-grande { font-size: 2.2rem; font-weight: 800; color: var(--tz-azul); margin: 6px 0 18px; }
+.tz-precio-grande small { font-size: 1rem; color: var(--tz-gris); margin-right: 6px; }
+.tz-texto { margin-top: 28px; background: #fff; border-radius: 18px; padding: 28px;
+            box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+.tz-texto h2 { margin: 0 0 10px; font-size: 1.2rem; }
+.tz-texto h2 + .tz-parrafo { margin-bottom: 22px; }
+.tz-parrafo { white-space: pre-line; line-height: 1.7; color: #33414f; }
+ 
+/* ---------- Pie ---------- */
+.tz-pie-pagina { background: var(--tz-azul); color: #cfe0ea; text-align: center;
+                 padding: 22px 5%; font-size: .9rem; }
+ 
+@media (max-width: 860px) {
+    .tz-barra { flex-wrap: wrap; gap: 12px; }
+    .tz-buscar { order: 3; flex-basis: 100%; max-width: none; }
+    .tz-detalle { grid-template-columns: 1fr; }
+    .tz-detalle-foto { height: 260px; }
+    .tz-hero h1 { font-size: 1.8rem; }
+}
+ 
+/* ---------- Reservar ---------- */
+.tz-reservar { display: grid; grid-template-columns: 1.6fr 1fr; gap: 28px; align-items: start; }
+.tz-form { background: #fff; border-radius: 18px; padding: 28px; box-shadow: 0 4px 18px rgba(0,0,0,.08); }
+.tz-seccion { margin: 0 0 12px; font-size: 1.25rem; }
+.tz-seccion:not(:first-child) { margin-top: 26px; }
+.tz-campos { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.tz-lbl { display: block; margin-bottom: 5px; font-size: .85rem; font-weight: 600; color: #3b4856; }
+.tz-pasajero { border: 1px solid #e3e9ef; border-radius: 14px; padding: 16px; margin-bottom: 14px; background: #fafcfd; }
+.tz-pasajero-cab { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.tz-resumen-reserva { position: sticky; top: 90px; background: #fff; border-radius: 18px; padding: 22px;
+                      box-shadow: 0 4px 18px rgba(0,0,0,.1); }
+.tz-resumen-reserva h3 { margin: 6px 0 4px; font-size: 1.15rem; }
+.tz-resumen-foto { height: 130px; border-radius: 12px; overflow: hidden;
+                   background: linear-gradient(135deg, #dbe9f1, #b9d9d3); }
+.tz-resumen-foto img { width: 100%; height: 100%; object-fit: cover; }
+.tz-linea { display: flex; justify-content: space-between; padding: 8px 0; font-size: .92rem;
+            border-bottom: 1px solid #edf1f5; color: var(--tz-gris); }
+.tz-linea strong { color: var(--tz-texto); }
+.tz-total { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 0 16px;
+            font-weight: 700; }
+.tz-total strong { font-size: 1.6rem; color: var(--tz-azul); }
+ 
+/* ---------- Mis reservas ---------- */
+.tz-exito { background: #e8f6f1; border: 1px solid #a7dccb; color: #14594f; padding: 14px 18px;
+            border-radius: 12px; margin-bottom: 20px; }
+.tz-reserva { background: #fff; border-radius: 16px; padding: 20px 22px; margin-bottom: 16px;
+              box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+.tz-reserva-cab { display: flex; justify-content: space-between; align-items: center; gap: 12px;
+                  flex-wrap: wrap; margin-bottom: 10px; }
+.tz-codigo { font-family: Consolas, monospace; font-weight: 700; font-size: 1.05rem; color: var(--tz-azul); }
+.tz-estado { padding: 5px 14px; border-radius: 999px; font-size: .8rem; font-weight: 700; }
+.tz-estado-PENDIENTE { background: #fff1e0; color: #b9651a; }
+.tz-estado-CONFIRMADA { background: #e1f4ec; color: #14764f; }
+.tz-estado-CANCELADA { background: #fde6e9; color: #b3263c; }
+.tz-estado-FINALIZADA { background: #e8edf2; color: #4a5a6a; }
+.tz-reserva-datos { display: flex; flex-wrap: wrap; gap: 8px 28px; color: var(--tz-gris); font-size: .92rem; }
+.tz-reserva-datos strong { color: var(--tz-texto); }
+.tz-acciones-panel { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+ 
+@media (max-width: 860px) {
+    .tz-reservar { grid-template-columns: 1fr; }
+    .tz-campos { grid-template-columns: 1fr; }
+    .tz-resumen-reserva { position: static; }
+}

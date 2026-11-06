@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:pt="jakarta.faces.passthrough"
+      xmlns:sec="https://joinfaces.org/security">
+
+<!-- Las páginas que reciben parámetros (?id=, ?q=, ?destino=) los declaran en la zona "metadata" -->
+<f:metadata>
+    <ui:insert name="metadata"/>
+</f:metadata>
+
+<h:head>
+    <title><ui:insert name="titulo">TravelZen</ui:insert></title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <h:outputStylesheet library="assets" name="css/primeflex.css"/>
+    <h:outputStylesheet library="assets" name="css/primeicons.css"/>
+    <h:outputStylesheet library="assets" name="css/publico.css"/>
+</h:head>
+
+<h:body>
+
+    <header class="tz-barra">
+        <a class="tz-logo" href="#{facesContext.externalContext.requestContextPath}/home.xhtml">
+            <i class="pi pi-send"></i> TravelZen
+        </a>
+
+        <h:form id="frmBuscar" styleClass="tz-buscar">
+            <h:inputText id="q" value="#{catalogoBean.q}" pt:placeholder="Busca destinos o paquetes"/>
+            <h:commandButton value="Buscar" action="#{catalogoBean.buscar}"/>
+        </h:form>
+
+        <nav class="tz-acciones">
+            <!-- Visitante sin sesión -->
+            <sec:authorize access="isAnonymous()">
+                <a class="tz-enlace" href="#{facesContext.externalContext.requestContextPath}/login.xhtml">Iniciar sesión</a>
+                <a class="tz-btn tz-btn-primario" href="#{facesContext.externalContext.requestContextPath}/registro.xhtml">Registrarse</a>
+            </sec:authorize>
+
+            <!-- Con sesión: cada rol vuelve a su panel -->
+            <sec:authorize access="isAuthenticated()">
+                <sec:authorize access="hasAuthority('ROLE_ADMIN')">
+                    <a class="tz-enlace" href="#{facesContext.externalContext.requestContextPath}/admin/home-admin.xhtml">Mi panel</a>
+                </sec:authorize>
+                <sec:authorize access="hasAuthority('ROLE_AGENTE')">
+                    <a class="tz-enlace" href="#{facesContext.externalContext.requestContextPath}/operario/home-operario.xhtml">Mi panel</a>
+                </sec:authorize>
+                <sec:authorize access="hasAuthority('ROLE_CLIENTE')">
+                    <a class="tz-enlace" href="#{facesContext.externalContext.requestContextPath}/cliente/home-cliente.xhtml">Mi panel</a>
+                </sec:authorize>
+                <a class="tz-btn tz-btn-borde" href="#{facesContext.externalContext.requestContextPath}/logout">Cerrar sesión</a>
+            </sec:authorize>
+        </nav>
+    </header>
+
+    <ui:insert name="contenido"/>
+
+    <footer class="tz-pie-pagina">
+        © 2026 TravelZen · Agencia de viajes internacional
+    </footer>
+
+</h:body>
+</html>

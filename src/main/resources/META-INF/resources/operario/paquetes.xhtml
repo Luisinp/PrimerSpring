@@ -1,0 +1,203 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="jakarta.faces.facelets"
+    template="../templates/template.xhtml">
+
+    <ui:define name="titulo">
+        Paquetes - TravelZen
+    </ui:define>
+
+    <ui:define name="nombreUsuario">
+        #{loginMB.username}
+    </ui:define>
+
+    <ui:define name="nombreDePagina">
+        Paquetes turísticos
+    </ui:define>
+
+    <!-- Vacío = esta página no muestra el bloque de bienvenida -->
+    <ui:define name="bienvenida"/>
+
+    <ui:define name="contenido">
+
+        <style>
+            .caja { background: #fff; padding: 18px; border-radius: 8px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,.12); margin-top: 14px; }
+            .filtros { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+            .filtros .derecha { margin-left: auto; }
+            .ok { color: #1f7a6d; }
+            .error { color: #b00020; }
+            .gris { color: #777; }
+            .campo { display: block; margin: 12px 0 4px; font-size: 14px; }
+            .ancho { width: 100%; box-sizing: border-box; }
+            .nota { font-size: 12px; color: #666; margin-top: 6px; }
+            .miniatura { width: 72px; height: 48px; object-fit: cover; border-radius: 4px; }
+            .sinfoto { width: 72px; height: 48px; border-radius: 4px; background: #e9edf1;
+                       color: #8a96a3; font-size: 11px; display: flex; align-items: center;
+                       justify-content: center; }
+            .vista { max-width: 220px; max-height: 140px; border-radius: 6px; margin-top: 6px; }
+        </style>
+
+        <h2>Paquetes turísticos</h2>
+
+        <!-- ================= Lista ================= -->
+        <h:form id="frm">
+
+            <p:messages id="msgs" closable="true"/>
+
+            <div class="caja">
+                <div class="filtros">
+                    <p:inputText value="#{paqueteBean.filtroTexto}" size="30"
+                                 placeholder="Buscar por paquete o destino"/>
+                    <p:selectOneMenu value="#{paqueteBean.filtroEstado}">
+                        <f:selectItem itemValue="TODOS" itemLabel="Todos los estados"/>
+                        <f:selectItem itemValue="ACTIVOS" itemLabel="Activos"/>
+                        <f:selectItem itemValue="INACTIVOS" itemLabel="Inactivos"/>
+                    </p:selectOneMenu>
+                    <p:selectOneMenu value="#{paqueteBean.filtroPublicacion}">
+                        <f:selectItem itemValue="TODOS" itemLabel="Publicados y borradores"/>
+                        <f:selectItem itemValue="PUBLICADOS" itemLabel="Solo publicados"/>
+                        <f:selectItem itemValue="BORRADORES" itemLabel="Solo borradores"/>
+                    </p:selectOneMenu>
+                    <p:commandButton value="Filtrar" action="#{paqueteBean.filtrar}" ajax="false"/>
+                    <p:commandButton value="Limpiar" action="#{paqueteBean.limpiar}" ajax="false" immediate="true"/>
+
+                    <span class="derecha">
+                        <p:commandButton value="Nuevo paquete" icon="pi pi-plus"
+                                         action="#{paqueteBean.nuevo}"
+                                         process="@this" update=":frmPaquete"
+                                         oncomplete="PF('dlgPaquete').show()"/>
+                    </span>
+                </div>
+            </div>
+
+            <div class="caja">
+                <p:dataTable id="tabla" var="p" value="#{paqueteBean.paquetes}" rows="10" paginator="true"
+                             emptyMessage="No hay paquetes que coincidan con la búsqueda.">
+
+                    <p:column headerText="Foto">
+                        <h:panelGroup rendered="#{p.imagenPortada != null}">
+                            <img class="miniatura" alt=""
+                                 src="#{facesContext.externalContext.requestContextPath}/media/paquetes/#{p.imagenPortada}"
+                                 onerror="this.style.display='none'"/>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" styleClass="sinfoto" rendered="#{p.imagenPortada == null}">
+                            Sin foto
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column headerText="Paquete">
+                        <strong><h:outputText value="#{p.nombre}"/></strong><br/>
+                        <span class="gris"><h:outputText value="#{p.destino.nombre}, #{p.destino.pais}"/></span>
+                    </p:column>
+                    <p:column headerText="Días">
+                        <h:outputText value="#{p.duracionDias}"/>
+                    </p:column>
+                    <p:column headerText="Precio">
+                        <h:outputText value="#{p.precio}">
+                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Cupos">
+                        <h:outputText value="#{p.cuposDisponibles}"/>
+                    </p:column>
+                    <p:column headerText="Estado">
+                        <h:outputText value="#{!p.activo ? 'Inactivo' : (p.publicado ? 'Publicado' : 'Borrador')}"
+                                      styleClass="#{!p.activo ? 'error' : (p.publicado ? 'ok' : 'gris')}"/>
+                    </p:column>
+                    <p:column headerText="Acciones">
+                        <p:commandButton value="Editar" styleClass="ui-button-sm"
+                                         action="#{paqueteBean.editar(p)}"
+                                         process="@this" update=":frmPaquete"
+                                         oncomplete="PF('dlgPaquete').show()"/>
+                        <h:commandButton value="#{p.publicado ? 'Ocultar' : 'Publicar'}"
+                                         action="#{paqueteBean.cambiarPublicacion(p)}"/>
+                        <h:commandButton value="#{p.activo ? 'Desactivar' : 'Activar'}"
+                                         action="#{paqueteBean.cambiarEstado(p)}"
+                                         onclick="return confirm('¿Confirmas el cambio de estado de este paquete?');"/>
+                        <h:commandButton value="Eliminar"
+                                         action="#{paqueteBean.eliminar(p)}"
+                                         onclick="return confirm('¿Eliminar este paquete definitivamente? Solo es posible si no tiene reservas. Esta acción no se puede deshacer.');"/>
+                    </p:column>
+                </p:dataTable>
+            </div>
+
+        </h:form>
+
+        <!-- ================= Ventana crear / editar ================= -->
+        <p:dialog header="Paquete turístico" widgetVar="dlgPaquete" modal="true"
+                  resizable="false" draggable="false" width="560" closeOnEscape="true"
+                  fitViewport="true" appendTo="@(body)">
+
+            <h:form id="frmPaquete">
+
+                <p:messages id="msgsPaquete" severity="error" closable="true"/>
+
+                <h3 style="margin-top:0">#{paqueteBean.editando ? 'Editar paquete' : 'Nuevo paquete'}</h3>
+
+                <label class="campo">Nombre del paquete *</label>
+                <p:inputText value="#{paqueteBean.nombre}" styleClass="ancho" required="true"
+                             requiredMessage="El nombre es obligatorio"/>
+
+                <label class="campo">Destino *</label>
+                <p:selectOneMenu value="#{paqueteBean.idDestino}" style="width:100%" required="true"
+                                 requiredMessage="Elige un destino">
+                    <f:selectItem itemLabel="— Elige un destino —" noSelectionOption="true"/>
+                    <f:selectItems value="#{paqueteBean.destinos}" var="d"
+                                   itemValue="#{d.id}" itemLabel="#{d.nombre} (#{d.pais})"/>
+                </p:selectOneMenu>
+
+                <label class="campo">Duración en días *</label>
+                <p:spinner value="#{paqueteBean.duracionDias}" min="1" max="365" required="true"
+                           requiredMessage="La duración es obligatoria"/>
+
+                <label class="campo">Precio *</label>
+                <p:inputNumber value="#{paqueteBean.precio}" decimalPlaces="2" decimalSeparator="."
+                               thousandSeparator="," minValue="0.01" maxValue="99999999" required="true"
+                               requiredMessage="El precio es obligatorio"/>
+
+                <label class="campo">Cupos disponibles</label>
+                <p:spinner value="#{paqueteBean.cuposDisponibles}" min="0" max="10000"/>
+
+                <label class="campo">Descripción</label>
+                <p:inputTextarea value="#{paqueteBean.descripcion}" rows="4" styleClass="ancho"/>
+
+                <label class="campo">Servicios incluidos</label>
+                <p:inputTextarea value="#{paqueteBean.serviciosIncluidos}" rows="3" styleClass="ancho"/>
+
+                <label class="campo">Foto de portada (JPG, PNG, WEBP o GIF, máximo 5 MB)</label>
+                <p:fileUpload listener="#{paqueteBean.subirImagen}" mode="advanced" auto="true"
+                              skinSimple="true" label="Elegir imagen"
+                              sizeLimit="5242880"
+                              allowTypes="/(\.|\/)(gif|jpe?g|png|webp)$/"
+                              invalidFileMessage="Solo se permiten imágenes JPG, PNG, WEBP o GIF."
+                              invalidSizeMessage="La imagen supera los 5 MB."
+                              update="lblImagen msgsPaquete"/>
+
+                <h:panelGroup id="lblImagen" layout="block" styleClass="nota">
+                    <h:outputText rendered="#{paqueteBean.imagenNombre != null}"
+                                  value="Imagen seleccionada: #{paqueteBean.imagenNombre}. Se guardará al presionar el botón de abajo."/>
+                    <h:panelGroup rendered="#{paqueteBean.imagenNombre == null and paqueteBean.imagenActual != null}">
+                        Foto actual (elige otra para reemplazarla):<br/>
+                        <img class="vista" alt=""
+                             src="#{facesContext.externalContext.requestContextPath}/media/paquetes/#{paqueteBean.imagenActual}"
+                             onerror="this.style.display='none'"/>
+                    </h:panelGroup>
+                </h:panelGroup>
+
+                <div style="margin-top:18px; text-align:right;">
+                    <p:commandButton value="Cancelar" type="button" styleClass="ui-button-secondary"
+                                     onclick="PF('dlgPaquete').hide()"/>
+                    <p:commandButton value="#{paqueteBean.editando ? 'Guardar cambios' : 'Crear paquete'}"
+                                     action="#{paqueteBean.guardar}"
+                                     process="@form" update="@form"/>
+                </div>
+
+            </h:form>
+        </p:dialog>
+
+    </ui:define>
+
+</ui:composition>

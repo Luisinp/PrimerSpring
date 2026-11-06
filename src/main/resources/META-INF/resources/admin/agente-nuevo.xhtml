@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <meta charset="UTF-8"/>
+    <title>Nuevo agente - TravelZen</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f3f6f9; margin: 0; }
+        .caja { max-width: 460px; margin: 30px auto; background: #fff; padding: 26px;
+                border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+        label { display: block; margin: 12px 0 4px; font-size: 14px; }
+        input[type=text] { width: 100%; padding: 8px; box-sizing: border-box; }
+        select { width: 100%; padding: 8px; }
+        .btn { margin-top: 18px; width: 100%; padding: 10px; background: #1f7a6d; color: #fff;
+               border: 0; border-radius: 4px; font-size: 15px; cursor: pointer; }
+        .error { color: #b00020; font-size: 13px; }
+        .clave { background: #fff8e1; border: 1px solid #f0c36d; padding: 14px; border-radius: 6px; }
+        .codigo { font-family: monospace; font-size: 22px; letter-spacing: 2px; font-weight: bold; }
+        .enlaces { margin-top: 16px; font-size: 14px; }
+    </style>
+</h:head>
+<h:body>
+<div class="caja">
+    <h2>Nuevo agente de viajes</h2>
+
+    <h:messages errorClass="error" layout="list"/>
+
+    <h:form id="frm" rendered="#{not agenteBean.creado}">
+        <label>Nombre completo *</label>
+        <h:inputText value="#{agenteBean.nombre}" required="true"
+                     requiredMessage="El nombre es obligatorio"/>
+
+        <label>Documento de identidad *</label>
+        <h:inputText value="#{agenteBean.documento}" required="true"
+                     requiredMessage="El documento es obligatorio"/>
+
+        <label>Correo electrónico (será su usuario) *</label>
+        <h:inputText value="#{agenteBean.correo}" required="true"
+                     requiredMessage="El correo es obligatorio"
+                     validatorMessage="El correo no tiene un formato válido">
+            <f:validateRegex pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$"/>
+        </h:inputText>
+
+        <label>Teléfono</label>
+        <h:inputText value="#{agenteBean.telefono}"/>
+
+        <label>Sexo</label>
+        <h:selectOneMenu value="#{agenteBean.sexo}">
+            <f:selectItem itemValue="" itemLabel="— Selecciona —" noSelectionOption="true"/>
+            <f:selectItem itemValue="M" itemLabel="Masculino"/>
+            <f:selectItem itemValue="F" itemLabel="Femenino"/>
+        </h:selectOneMenu>
+
+        <label>Nacionalidad</label>
+        <h:inputText value="#{agenteBean.nacionalidad}"/>
+
+        <label>Fecha de nacimiento (dd/mm/aaaa)</label>
+        <p:datePicker value="#{agenteBean.fechaNacimiento}" pattern="dd/MM/yyyy"/>
+
+        <label>Fecha de ingreso *</label>
+        <p:datePicker value="#{agenteBean.fechaIngreso}" pattern="dd/MM/yyyy" required="true"
+                      requiredMessage="La fecha de ingreso es obligatoria"/>
+
+        <h:commandButton value="Registrar agente" action="#{agenteBean.guardar}" styleClass="btn"/>
+    </h:form>
+
+    <h:form rendered="#{agenteBean.creado}">
+        <h:panelGroup layout="block" styleClass="clave">
+            <p><strong>Agente registrado correctamente.</strong></p>
+            <p>Usuario: <strong>#{agenteBean.correoClave}</strong></p>
+            <p>Contraseña temporal:</p>
+            <p class="codigo">#{agenteBean.claveTemporal}</p>
+            <p>Anótala y entrégasela al agente. Por seguridad no se vuelve a mostrar.</p>
+        </h:panelGroup>
+        <h:commandButton value="Registrar otro agente" action="#{agenteBean.otroAgente}" styleClass="btn"/>
+    </h:form>
+
+    <div class="enlaces">
+        <h:link value="← Volver a la lista de agentes" outcome="agentes"/>
+    </div>
+</div>
+</h:body>
+</html>

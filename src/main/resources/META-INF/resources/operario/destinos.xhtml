@@ -1,0 +1,134 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="jakarta.faces.facelets"
+    template="../templates/template.xhtml">
+
+    <ui:define name="titulo">
+        Destinos - TravelZen
+    </ui:define>
+
+    <ui:define name="nombreUsuario">
+        #{loginMB.username}
+    </ui:define>
+
+    <ui:define name="nombreDePagina">
+        Destinos
+    </ui:define>
+
+    <!-- Vacío = esta página no muestra el bloque de bienvenida -->
+    <ui:define name="bienvenida"/>
+
+    <ui:define name="contenido">
+
+        <style>
+            .caja { background: #fff; padding: 18px; border-radius: 8px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,.12); margin-top: 14px; }
+            .filtros { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+            .filtros .derecha { margin-left: auto; }
+            .ok { color: #1f7a6d; }
+            .error { color: #b00020; }
+            .campo { display: block; margin: 12px 0 4px; font-size: 14px; }
+            .ancho { width: 100%; box-sizing: border-box; }
+        </style>
+
+        <h2>Destinos turísticos</h2>
+
+        <!-- ================= Lista ================= -->
+        <h:form id="frm">
+
+            <p:messages id="msgs" closable="true"/>
+
+            <div class="caja">
+                <div class="filtros">
+                    <p:inputText value="#{destinoBean.filtroTexto}" size="30"
+                                 placeholder="Buscar por destino o país"/>
+                    <p:selectOneMenu value="#{destinoBean.filtroEstado}">
+                        <f:selectItem itemValue="TODOS" itemLabel="Todos los estados"/>
+                        <f:selectItem itemValue="ACTIVOS" itemLabel="Activos"/>
+                        <f:selectItem itemValue="INACTIVOS" itemLabel="Inactivos"/>
+                    </p:selectOneMenu>
+                    <p:commandButton value="Filtrar" action="#{destinoBean.filtrar}" ajax="false"/>
+                    <p:commandButton value="Limpiar" action="#{destinoBean.limpiar}" ajax="false" immediate="true"/>
+
+                    <span class="derecha">
+                        <p:commandButton value="Nuevo destino" icon="pi pi-plus"
+                                         action="#{destinoBean.nuevo}"
+                                         process="@this" update=":frmDestino"
+                                         oncomplete="PF('dlgDestino').show()"/>
+                    </span>
+                </div>
+            </div>
+
+            <div class="caja">
+                <p:dataTable id="tabla" var="d" value="#{destinoBean.destinos}" rows="10" paginator="true"
+                             emptyMessage="No hay destinos que coincidan con la búsqueda.">
+
+                    <p:column headerText="Destino">
+                        <h:outputText value="#{d.nombre}"/>
+                    </p:column>
+                    <p:column headerText="País">
+                        <h:outputText value="#{d.pais}"/>
+                    </p:column>
+                    <p:column headerText="Descripción">
+                        <h:outputText value="#{d.descripcion}"/>
+                    </p:column>
+                    <p:column headerText="Estado">
+                        <h:outputText value="#{d.activo ? 'Activo' : 'Inactivo'}"
+                                      styleClass="#{d.activo ? 'ok' : 'error'}"/>
+                    </p:column>
+                    <p:column headerText="Acciones">
+                        <p:commandButton value="Editar" styleClass="ui-button-sm"
+                                         action="#{destinoBean.editar(d)}"
+                                         process="@this" update=":frmDestino"
+                                         oncomplete="PF('dlgDestino').show()"/>
+                        <h:commandButton value="#{d.activo ? 'Desactivar' : 'Activar'}"
+                                         action="#{destinoBean.cambiarEstado(d)}"
+                                         onclick="return confirm('¿Confirmas el cambio de estado de este destino?');"/>
+                        <h:commandButton value="Eliminar"
+                                         action="#{destinoBean.eliminar(d)}"
+                                         onclick="return confirm('¿Eliminar este destino definitivamente? Solo es posible si no tiene paquetes. Esta acción no se puede deshacer.');"/>
+                    </p:column>
+                </p:dataTable>
+            </div>
+
+        </h:form>
+
+        <!-- ================= Ventana crear / editar ================= -->
+        <p:dialog header="Destino" widgetVar="dlgDestino" modal="true"
+                  resizable="false" draggable="false" width="460" closeOnEscape="true"
+                  appendTo="@(body)">
+
+            <h:form id="frmDestino">
+
+                <p:messages id="msgsDestino" severity="error" closable="true"/>
+
+                <h3 style="margin-top:0">#{destinoBean.editando ? 'Editar destino' : 'Nuevo destino'}</h3>
+
+                <label class="campo">Destino *</label>
+                <p:inputText value="#{destinoBean.nombre}" styleClass="ancho" required="true"
+                             requiredMessage="El nombre del destino es obligatorio"/>
+
+                <label class="campo">País *</label>
+                <p:inputText value="#{destinoBean.pais}" styleClass="ancho" required="true"
+                             requiredMessage="El país es obligatorio"/>
+
+                <label class="campo">Descripción</label>
+                <p:inputTextarea value="#{destinoBean.descripcion}" rows="4" styleClass="ancho"/>
+
+                <div style="margin-top:18px; text-align:right;">
+                    <p:commandButton value="Cancelar" type="button" styleClass="ui-button-secondary"
+                                     onclick="PF('dlgDestino').hide()"/>
+                    <p:commandButton value="#{destinoBean.editando ? 'Guardar cambios' : 'Registrar destino'}"
+                                     action="#{destinoBean.guardar}"
+                                     process="@form" update="@form"/>
+                </div>
+
+            </h:form>
+        </p:dialog>
+
+    </ui:define>
+
+</ui:composition>
