@@ -1,0 +1,171 @@
+/* Panel de reservas del personal (operario/reservas.xhtml).
+   Clases con prefijo tzp- para no chocar con los demás estilos. */
+ 
+.tzp-pagina { max-width: 1100px; margin: 0 auto; padding: 8px 0 40px; }
+ 
+.tzp-cabecera { display: flex; justify-content: space-between; align-items: flex-end;
+                gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+.tzp-titulo { margin: 0; font-size: 1.7rem; color: #0b3b60; }
+.tzp-sub { margin: 4px 0 0; color: #5b6b7b; }
+ 
+/* ----- Resumen por estado ----- */
+.tzp-resumen { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+               gap: 12px; margin: 16px 0; }
+.tzp-chip { background: #fff; border-radius: 14px; padding: 14px 16px;
+            box-shadow: 0 2px 10px rgba(11, 59, 96, .08);
+            border-left: 5px solid #cbd5e1; display: flex; flex-direction: column; }
+.tzp-chip strong { font-size: 1.7rem; line-height: 1.1; color: #0b3b60; }
+.tzp-chip span { color: #5b6b7b; font-size: .85rem; }
+.tzp-chip-PENDIENTE  { border-left-color: #f59a23; }
+.tzp-chip-CONFIRMADA { border-left-color: #10b981; }
+.tzp-chip-FINALIZADA { border-left-color: #64748b; }
+.tzp-chip-CANCELADA  { border-left-color: #ef4444; }
+ 
+/* ----- Filtros ----- */
+.tzp-filtros { display: grid; grid-template-columns: 2fr 1fr auto; gap: 12px;
+               align-items: end; background: #fff; border-radius: 14px;
+               padding: 16px; box-shadow: 0 2px 10px rgba(11, 59, 96, .08); margin-bottom: 8px; }
+.tzp-filtros-botones { display: flex; gap: 8px; }
+.tzp-lbl { display: block; font-size: .8rem; font-weight: 600; color: #475569; margin-bottom: 4px; }
+ 
+/* ----- Tarjeta de reserva ----- */
+.tzp-reserva { background: #fff; border-radius: 14px; padding: 18px 20px; margin: 14px 0;
+               box-shadow: 0 2px 12px rgba(11, 59, 96, .08); }
+.tzp-cab { display: flex; justify-content: space-between; align-items: center;
+           gap: 8px; margin-bottom: 6px; }
+.tzp-codigo { font-family: ui-monospace, Consolas, monospace; font-weight: 700;
+              color: #0b3b60; letter-spacing: .3px; }
+.tzp-paquete { margin: 0 0 10px; font-size: 1.15rem; color: #0f2a43; }
+ 
+.tzp-estado { padding: 5px 12px; border-radius: 999px; font-size: .78rem; font-weight: 700; }
+.tzp-estado-PENDIENTE  { background: #fff1e0; color: #b45309; }
+.tzp-estado-CONFIRMADA { background: #e0f5ec; color: #047857; }
+.tzp-estado-CANCELADA  { background: #fde8e8; color: #b91c1c; }
+.tzp-estado-FINALIZADA { background: #e8eef5; color: #334e68; }
+ 
+.tzp-datos { display: flex; flex-wrap: wrap; gap: 8px 22px; color: #475569; font-size: .92rem; }
+.tzp-datos i { margin-right: 5px; color: #64748b; }
+ 
+.tzp-botones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px;
+               padding-top: 14px; border-top: 1px solid #eef2f6; }
+ 
+/* ----- Historial ----- */
+.tzp-historial { margin-top: 14px; padding: 12px 16px; background: #f8fafc;
+                 border-radius: 12px; border: 1px solid #e8eef5; }
+.tzp-historial h4 { margin: 0 0 6px; color: #0b3b60; font-size: .95rem; }
+.tzp-mov { display: flex; gap: 10px; padding: 7px 0; }
+.tzp-punto { width: 10px; height: 10px; border-radius: 50%; background: #2196f3;
+             margin-top: 6px; flex: none; }
+.tzp-mov small { display: block; color: #64748b; }
+ 
+/* ----- Sin resultados ----- */
+.tzp-vacio { text-align: center; background: #fff; border-radius: 14px;
+             padding: 36px 16px; margin-top: 14px; color: #5b6b7b;
+             box-shadow: 0 2px 10px rgba(11, 59, 96, .08); }
+ 
+@media (max-width: 760px) {
+    .tzp-resumen { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .tzp-filtros { grid-template-columns: 1fr; }
+}
+ 
+/* ===== Aviso de éxito ===== */
+.tzp-exito { background: #e6f5ee; border: 1px solid #9bd9bf; color: #1f5c45;
+             border-radius: 12px; padding: 12px 16px; margin: 12px 0; }
+ 
+/* ===== Nueva reserva (operario/reserva-nueva.xhtml) ===== */
+.tzp-nueva { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
+.tzp-form { background: #fff; border-radius: 14px; padding: 20px 22px;
+            box-shadow: 0 2px 12px rgba(11, 59, 96, .08); }
+.tzp-seccion { font-size: 1.1rem; color: #0b3b60; margin: 22px 0 10px; }
+.tzp-seccion:first-child { margin-top: 0; }
+.tzp-campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; margin-bottom: 10px; }
+.tzp-campo-ancho { grid-column: 1 / -1; }
+.tzp-nota { color: #64748b; font-size: .85rem; margin: 6px 0 10px; }
+ 
+.tzp-buscador { display: flex; gap: 8px; align-items: center; }
+.tzp-buscador-campo { flex: 1; }
+.tzp-resultado { display: flex; justify-content: space-between; align-items: center; gap: 10px;
+                 padding: 10px 12px; border: 1px solid #e8eef5; border-radius: 10px; margin-top: 8px; }
+.tzp-resultado small, .tzp-cliente small { display: block; color: #64748b; }
+.tzp-cliente { display: flex; justify-content: space-between; align-items: center; gap: 10px;
+               background: #eef6ff; border: 1px solid #cfe3f7; border-radius: 12px; padding: 12px 14px; }
+ 
+.tzp-pasajero { border: 1px solid #e8eef5; border-radius: 12px; padding: 14px; margin: 10px 0; background: #f8fafc; }
+.tzp-pasajero-cab { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+ 
+.tzp-lateral { position: sticky; top: 16px; background: #fff; border-radius: 14px; padding: 18px 20px;
+               box-shadow: 0 2px 12px rgba(11, 59, 96, .08); }
+.tzp-lat-titulo { margin: 0 0 8px; color: #0b3b60; font-size: 1.05rem; }
+.tzp-linea { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0;
+             border-bottom: 1px solid #eef2f6; font-size: .92rem; color: #475569; }
+.tzp-linea strong { text-align: right; color: #0f2a43; }
+.tzp-total { display: flex; justify-content: space-between; align-items: baseline; margin: 14px 0; color: #475569; }
+.tzp-total strong { font-size: 1.5rem; color: #0b3b60; }
+ 
+@media (max-width: 900px) {
+    .tzp-nueva { grid-template-columns: 1fr; }
+    .tzp-lateral { position: static; }
+}
+@media (max-width: 600px) {
+    .tzp-campos { grid-template-columns: 1fr; }
+}
+ 
+/* ===== Pagos (operario/pagos.xhtml) ===== */
+.tzp-saldos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 14px 0; }
+.tzp-chip-TOTAL  { border-left-color: #0b3b60; }
+.tzp-chip-PAGADO { border-left-color: #10b981; }
+.tzp-chip-SALDO  { border-left-color: #f59a23; }
+.tzp-bloque { margin-top: 16px; }
+.tzp-aviso { background: #eef6ff; border: 1px solid #cfe3f7; color: #1e4e79;
+             border-radius: 12px; padding: 12px 16px; margin: 12px 0; }
+.tzp-aviso i { margin-right: 6px; }
+ 
+.tzp-pago { display: grid; grid-template-columns: auto 1fr auto auto; gap: 14px; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid #eef2f6; }
+.tzp-pago:last-child { border-bottom: 0; }
+.tzp-pago-num { font-family: ui-monospace, Consolas, monospace; font-weight: 700; color: #0b3b60; }
+.tzp-pago small { display: block; color: #64748b; }
+.tzp-monto { font-weight: 700; color: #0b3b60; white-space: nowrap; }
+ 
+@media (max-width: 760px) {
+    .tzp-saldos { grid-template-columns: 1fr; }
+    .tzp-pago { grid-template-columns: 1fr auto; }
+}
+ 
+/* ===== Comprobante (operario/comprobante.xhtml) ===== */
+.tzp-fondo-hoja { background: #e9edf1; margin: 0; padding: 16px; font-family: inherit; }
+.tzp-hoja { max-width: 720px; margin: 16px auto; background: #fff; border-radius: 14px;
+            padding: 32px 36px; box-shadow: 0 2px 14px rgba(11, 59, 96, .12); }
+.tzp-hoja-cab { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+                border-bottom: 2px solid #0b3b60; padding-bottom: 14px; margin-bottom: 20px; }
+.tzp-hoja-marca { font-size: 1.5rem; font-weight: 800; color: #0b3b60; }
+.tzp-hoja-sub { color: #64748b; font-size: .85rem; }
+.tzp-hoja-num { text-align: right; }
+.tzp-hoja-num small { display: block; color: #64748b; font-size: .72rem; letter-spacing: .5px; }
+.tzp-hoja-num strong { display: block; font-size: 1.35rem; font-family: ui-monospace, Consolas, monospace; color: #0b3b60; }
+.tzp-hoja-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 28px; }
+.tzp-hoja-grid small { display: block; color: #64748b; text-transform: uppercase; font-size: .7rem; letter-spacing: .5px; }
+.tzp-hoja-grid strong { display: block; color: #0f2a43; }
+.tzp-hoja-grid span { color: #475569; font-size: .9rem; }
+.tzp-hoja-ancho { grid-column: 1 / -1; }
+.tzp-hoja-importe { margin: 22px 0 12px; padding: 16px 20px; background: #f1f7fd; border-radius: 12px;
+                    display: flex; justify-content: space-between; align-items: baseline; color: #475569; }
+.tzp-hoja-importe strong { font-size: 1.9rem; color: #0b3b60; }
+.tzp-hoja-linea { display: flex; justify-content: space-between; padding: 8px 4px;
+                  border-bottom: 1px solid #eef2f6; color: #475569; }
+.tzp-hoja-linea strong { color: #0f2a43; }
+.tzp-hoja-pie { margin-top: 24px; text-align: center; color: #64748b; font-size: .8rem; }
+ 
+.tzp-acciones-hoja { max-width: 720px; margin: 0 auto; display: flex; gap: 8px; justify-content: flex-end; }
+.tzp-btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 8px;
+           border: 1px solid transparent; font-size: .9rem; font-weight: 600; cursor: pointer;
+           text-decoration: none; background: #fff; }
+.tzp-btn-primario { background: #2196f3; color: #fff; }
+.tzp-btn-borde { color: #0b3b60; border-color: #0b3b60; }
+ 
+@media print {
+    .tzp-no-imprimir { display: none !important; }
+    .tzp-fondo-hoja { background: #fff !important; padding: 0; }
+    .tzp-hoja { box-shadow: none; margin: 0; max-width: 100%; border-radius: 0; }
+}
+ 

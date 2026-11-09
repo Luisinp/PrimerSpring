@@ -1,0 +1,233 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="jakarta.faces.facelets"
+    template="../templates/template.xhtml">
+
+    <ui:define name="titulo">
+        Nueva reserva - TravelZen
+    </ui:define>
+
+    <ui:define name="bienvenida"/>
+
+    <ui:define name="contenido">
+        <h:outputStylesheet library="assets" name="css/reservas-personal.css" target="head"/>
+
+        <div class="tzp-pagina">
+
+            <div class="tzp-cabecera">
+                <div>
+                    <h1 class="tzp-titulo">Nueva reserva</h1>
+                    <p class="tzp-sub">Registra una reserva a nombre de un cliente atendido en la agencia.</p>
+                </div>
+                <p:button id="btnVolver" value="Volver a reservas" icon="pi pi-arrow-left"
+                          outcome="/operario/reservas.xhtml" styleClass="ui-button-outlined ui-button-secondary"/>
+            </div>
+
+            <h:form id="frmNueva">
+
+                <p:messages id="msgs" showDetail="false" closable="true"/>
+
+                <!-- La tecla Enter solo actualiza el resumen (o busca al cliente); nunca quita ni registra nada -->
+                <p:defaultCommand target="btnActualizar"/>
+
+                <div class="tzp-nueva">
+
+                    <!-- ============ Formulario ============ -->
+                    <div class="tzp-form">
+
+                        <!-- 1. Cliente -->
+                        <h2 class="tzp-seccion">1. Cliente</h2>
+
+                        <h:panelGroup id="buscaCliente" layout="block"
+                                      rendered="#{reservaPersonalBean.clienteSeleccionado == null}">
+                            <div class="tzp-buscador">
+                                <div class="tzp-buscador-campo">
+                                    <p:inputText id="textoCliente" value="#{reservaPersonalBean.textoCliente}"
+                                                 styleClass="w-full"
+                                                 placeholder="Nombre, documento o correo del cliente"/>
+                                </div>
+                                <p:commandButton id="btnBuscarCliente" value="Buscar" icon="pi pi-search"
+                                                 action="#{reservaPersonalBean.buscarCliente}" ajax="false"/>
+                            </div>
+                            <p class="tzp-nota">¿Cliente nuevo? Regístralo primero en
+                                <a href="clientes.xhtml">Clientes</a>.</p>
+
+                            <ui:repeat id="resultados" value="#{reservaPersonalBean.resultadosCliente}" var="c">
+                                <div class="tzp-resultado">
+                                    <div>
+                                        <strong><h:outputText value="#{c.nombreCompleto}"/></strong>
+                                        <small><h:outputText value="#{c.documentoIdentidad}"/>
+                                            · <h:outputText value="#{c.correo}"/></small>
+                                    </div>
+                                    <p:commandButton id="btnElegir" value="Elegir" icon="pi pi-check"
+                                                     action="#{reservaPersonalBean.elegirCliente(c.id)}" ajax="false"
+                                                     styleClass="ui-button-sm"/>
+                                </div>
+                            </ui:repeat>
+
+                            <h:panelGroup id="sinResultados" layout="block" styleClass="tzp-nota"
+                                          rendered="#{reservaPersonalBean.busquedaHecha and empty reservaPersonalBean.resultadosCliente}">
+                                No se encontraron clientes activos con esa búsqueda.
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="clienteElegido" layout="block" styleClass="tzp-cliente"
+                                      rendered="#{reservaPersonalBean.clienteSeleccionado != null}">
+                            <div>
+                                <strong><h:outputText value="#{reservaPersonalBean.clienteSeleccionado.nombreCompleto}"/></strong>
+                                <small><h:outputText value="#{reservaPersonalBean.clienteSeleccionado.documentoIdentidad}"/>
+                                    · <h:outputText value="#{reservaPersonalBean.clienteSeleccionado.correo}"/></small>
+                            </div>
+                            <p:commandButton id="btnCambiarCliente" value="Cambiar" icon="pi pi-refresh"
+                                             action="#{reservaPersonalBean.cambiarCliente}" ajax="false"
+                                             styleClass="ui-button-sm ui-button-outlined ui-button-secondary"/>
+                        </h:panelGroup>
+
+                        <!-- 2. Viaje -->
+                        <h2 class="tzp-seccion">2. Viaje</h2>
+                        <div class="tzp-campos">
+                            <div class="tzp-campo-ancho">
+                                <label class="tzp-lbl">Paquete *</label>
+                                <p:selectOneMenu id="paquete" value="#{reservaPersonalBean.idPaquete}" style="width:100%">
+                                    <f:selectItem itemValue="" itemLabel="— Elige un paquete —" noSelectionOption="true"/>
+                                    <f:selectItems value="#{reservaPersonalBean.paquetes}" var="pq"
+                                                   itemValue="#{pq.id}"
+                                                   itemLabel="#{pq.nombre} · #{pq.destino.nombre}, #{pq.destino.pais} · #{pq.cuposDisponibles} cupos"/>
+                                </p:selectOneMenu>
+                            </div>
+                            <div>
+                                <label class="tzp-lbl">Fecha de salida *</label>
+                                <p:datePicker id="fechaSalida" value="#{reservaPersonalBean.fechaInicio}"
+                                              pattern="dd/MM/yyyy" mindate="#{reservaPersonalBean.fechaMinima}"
+                                              style="width:100%" inputStyle="width:100%"/>
+                            </div>
+                            <div>
+                                <label class="tzp-lbl">Ciudad de salida *</label>
+                                <p:inputText id="origen" value="#{reservaPersonalBean.origen}" styleClass="w-full"
+                                             placeholder="Ej.: La Paz"/>
+                            </div>
+                        </div>
+                        <p:commandButton id="btnActualizar" value="Actualizar resumen" icon="pi pi-sync"
+                                         action="#{reservaPersonalBean.actualizar}" ajax="false"
+                                         styleClass="ui-button-outlined ui-button-secondary ui-button-sm"/>
+
+                        <!-- 3. Pasajeros -->
+                        <h2 class="tzp-seccion">3. Pasajeros</h2>
+                        <p class="tzp-nota">Escribe los datos tal como figuran en el documento de viaje.</p>
+
+                        <ui:repeat id="listaPasajeros" value="#{reservaPersonalBean.pasajeros}" var="ps" varStatus="st">
+                            <div class="tzp-pasajero">
+                                <div class="tzp-pasajero-cab">
+                                    <strong>Pasajero <h:outputText value="#{st.index + 1}"/></strong>
+                                    <p:commandButton id="btnQuitar" value="Quitar" action="#{reservaPersonalBean.quitar(ps)}"
+                                                     ajax="false"
+                                                     rendered="#{reservaPersonalBean.pasajeros.size() gt 1}"
+                                                     styleClass="ui-button-sm ui-button-secondary"/>
+                                </div>
+                                <div class="tzp-campos">
+                                    <div>
+                                        <label class="tzp-lbl">Nombre completo *</label>
+                                        <p:inputText id="nombre" value="#{ps.nombre}" styleClass="w-full"/>
+                                    </div>
+                                    <div>
+                                        <label class="tzp-lbl">Documento de identidad *</label>
+                                        <p:inputText id="documento" value="#{ps.documento}" styleClass="w-full"/>
+                                    </div>
+                                    <div>
+                                        <label class="tzp-lbl">Nacionalidad</label>
+                                        <p:inputText id="nacionalidad" value="#{ps.nacionalidad}" styleClass="w-full"/>
+                                    </div>
+                                    <div>
+                                        <label class="tzp-lbl">Sexo</label>
+                                        <p:selectOneMenu id="sexo" value="#{ps.sexo}" style="width:100%">
+                                            <f:selectItem itemValue="" itemLabel="— Selecciona —" noSelectionOption="true"/>
+                                            <f:selectItem itemValue="M" itemLabel="Masculino"/>
+                                            <f:selectItem itemValue="F" itemLabel="Femenino"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div>
+                                        <label class="tzp-lbl">Fecha de nacimiento</label>
+                                        <p:datePicker id="nacimiento" value="#{ps.fechaNacimiento}" pattern="dd/MM/yyyy"
+                                                      style="width:100%" inputStyle="width:100%"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </ui:repeat>
+
+                        <p:commandButton id="btnAgregar" value="+ Agregar pasajero" action="#{reservaPersonalBean.agregar}"
+                                         ajax="false" rendered="#{reservaPersonalBean.puedeAgregar}"
+                                         styleClass="ui-button-outlined"/>
+
+                        <!-- 4. Estado inicial -->
+                        <h2 class="tzp-seccion">4. Estado inicial</h2>
+                        <p:selectBooleanCheckbox id="confirmar" value="#{reservaPersonalBean.confirmarDeInmediato}"
+                                                 itemLabel="Confirmar de inmediato (el cliente ya aceptó la reserva)"/>
+                        <p class="tzp-nota">Si no la marcas, la reserva queda pendiente y la confirmas después desde el panel de reservas.</p>
+                    </div>
+
+                    <!-- ============ Resumen ============ -->
+                    <aside class="tzp-lateral">
+                        <h:panelGroup id="resumen" layout="block">
+                            <h3 class="tzp-lat-titulo">Resumen</h3>
+
+                            <div class="tzp-linea">
+                                <span>Cliente</span>
+                                <strong><h:outputText value="#{reservaPersonalBean.clienteSeleccionado != null ? reservaPersonalBean.clienteSeleccionado.nombreCompleto : '—'}"/></strong>
+                            </div>
+                            <div class="tzp-linea">
+                                <span>Paquete</span>
+                                <strong><h:outputText value="#{reservaPersonalBean.paqueteElegido != null ? reservaPersonalBean.paqueteElegido.nombre : '—'}"/></strong>
+                            </div>
+
+                            <h:panelGroup id="detallePaquete" rendered="#{reservaPersonalBean.paqueteElegido != null}">
+                                <div class="tzp-linea">
+                                    <span>Precio por persona</span>
+                                    <strong>USD <h:outputText value="#{reservaPersonalBean.paqueteElegido.precio}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                    </h:outputText></strong>
+                                </div>
+                                <div class="tzp-linea">
+                                    <span>Duración</span>
+                                    <strong><h:outputText value="#{reservaPersonalBean.paqueteElegido.duracionDias} días"/></strong>
+                                </div>
+                                <div class="tzp-linea">
+                                    <span>Cupos disponibles</span>
+                                    <strong><h:outputText value="#{reservaPersonalBean.paqueteElegido.cuposDisponibles}"/></strong>
+                                </div>
+                            </h:panelGroup>
+
+                            <div class="tzp-linea">
+                                <span>Pasajeros</span>
+                                <strong><h:outputText value="#{reservaPersonalBean.pasajeros.size()}"/></strong>
+                            </div>
+
+                            <h:panelGroup id="finViaje" rendered="#{reservaPersonalBean.fechaFin != null}">
+                                <div class="tzp-linea">
+                                    <span>Fin del viaje</span>
+                                    <strong><h:outputText value="#{reservaPersonalBean.fechaFin}">
+                                        <f:convertDateTime type="localDate" pattern="dd/MM/yyyy"/>
+                                    </h:outputText></strong>
+                                </div>
+                            </h:panelGroup>
+
+                            <div class="tzp-total">
+                                <span>Total</span>
+                                <strong>USD <h:outputText value="#{reservaPersonalBean.total}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText></strong>
+                            </div>
+                        </h:panelGroup>
+
+                        <p:commandButton id="btnRegistrar" value="Registrar reserva" icon="pi pi-check"
+                                         action="#{reservaPersonalBean.registrar}" ajax="false" styleClass="w-full"/>
+                    </aside>
+
+                </div>
+            </h:form>
+        </div>
+    </ui:define>
+
+</ui:composition>

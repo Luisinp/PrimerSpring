@@ -1,0 +1,195 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="jakarta.faces.facelets"
+    template="../templates/template.xhtml">
+
+    <ui:define name="titulo">
+        Administradores - TravelZen
+    </ui:define>
+
+    <ui:define name="bienvenida"/>
+
+    <ui:define name="contenido">
+        <h:outputStylesheet library="assets" name="css/administradores.css" target="head"/>
+
+        <div class="tza-pagina">
+
+            <div class="tza-cabecera">
+                <div>
+                    <h1 class="tza-titulo">Administradores</h1>
+                    <p class="tza-sub">Registra, edita y controla el acceso de los administradores del sistema.</p>
+                </div>
+            </div>
+
+            <h:form id="frmAdmin">
+
+                <p:messages id="msgs" showDetail="false" closable="true"/>
+
+                <!-- La tecla Enter ejecuta Filtrar, nunca una acción destructiva -->
+                <p:defaultCommand target="btnFiltrar"/>
+
+                <!-- ============ Contraseña temporal (una sola vez) ============ -->
+                <h:panelGroup id="panelClave" layout="block" styleClass="tza-clave"
+                              rendered="#{administradorBean.claveTemporal != null}">
+                    <div>Contraseña temporal de <strong><h:outputText value="#{administradorBean.correoClave}"/></strong>:</div>
+                    <div class="tza-codigo"><h:outputText value="#{administradorBean.claveTemporal}"/></div>
+                    <div class="tza-nota">Anótala y entrégasela. Por seguridad no se vuelve a mostrar.</div>
+                    <p:commandButton id="btnCerrarClave" value="Ya la anoté" icon="pi pi-check"
+                                     action="#{administradorBean.cerrarClave}" ajax="false"
+                                     styleClass="mt-2"/>
+                </h:panelGroup>
+
+                <!-- ============ Filtros ============ -->
+                <div class="tza-panel">
+                    <div class="tza-filtros">
+                        <div>
+                            <label class="tza-lbl">Buscar</label>
+                            <p:inputText id="texto" value="#{administradorBean.filtroTexto}" styleClass="w-full"
+                                         placeholder="Nombre, documento o correo"/>
+                        </div>
+                        <div>
+                            <label class="tza-lbl">Estado</label>
+                            <p:selectOneMenu id="estadoFiltro" value="#{administradorBean.filtroEstado}" style="width:100%">
+                                <f:selectItem itemValue="TODOS" itemLabel="Todos"/>
+                                <f:selectItem itemValue="ACTIVOS" itemLabel="Activos"/>
+                                <f:selectItem itemValue="INACTIVOS" itemLabel="Inactivos"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="tza-botones">
+                            <p:commandButton id="btnFiltrar" value="Filtrar" icon="pi pi-search"
+                                             action="#{administradorBean.filtrar}" ajax="false"/>
+                            <p:commandButton id="btnLimpiar" value="Limpiar" icon="pi pi-times"
+                                             action="#{administradorBean.limpiar}" ajax="false" immediate="true"
+                                             styleClass="ui-button-outlined ui-button-secondary"/>
+                            <p:commandButton id="btnNuevo" value="Nuevo administrador" icon="pi pi-plus"
+                                             action="#{administradorBean.nuevo}" ajax="false" immediate="true"
+                                             styleClass="ui-button-success"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============ Formulario de alta y edición ============ -->
+                <h:panelGroup id="panelForm" layout="block" styleClass="tza-panel"
+                              rendered="#{administradorBean.formularioAbierto}">
+                    <h2 class="tza-seccion">
+                        <h:outputText value="#{administradorBean.editando ? 'Editar administrador' : 'Nuevo administrador'}"/>
+                    </h2>
+
+                    <div class="tza-campos">
+                        <div>
+                            <label class="tza-lbl">Nombre completo *</label>
+                            <p:inputText id="nombre" value="#{administradorBean.nombre}" styleClass="w-full"/>
+                        </div>
+                        <div>
+                            <label class="tza-lbl">Documento de identidad *</label>
+                            <p:inputText id="documento" value="#{administradorBean.documento}" styleClass="w-full"/>
+                        </div>
+                        <div class="tza-ancho">
+                            <label class="tza-lbl">Correo electrónico (será su usuario) *</label>
+                            <p:inputText id="correo" value="#{administradorBean.correo}" styleClass="w-full"/>
+                        </div>
+                        <div>
+                            <label class="tza-lbl">Teléfono</label>
+                            <p:inputText id="telefono" value="#{administradorBean.telefono}" styleClass="w-full"/>
+                        </div>
+                        <div>
+                            <label class="tza-lbl">Sexo</label>
+                            <p:selectOneMenu id="sexo" value="#{administradorBean.sexo}" style="width:100%">
+                                <f:selectItem itemValue="" itemLabel="— Selecciona —" noSelectionOption="true"/>
+                                <f:selectItem itemValue="M" itemLabel="Masculino"/>
+                                <f:selectItem itemValue="F" itemLabel="Femenino"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div>
+                            <label class="tza-lbl">Nacionalidad</label>
+                            <p:inputText id="nacionalidad" value="#{administradorBean.nacionalidad}" styleClass="w-full"/>
+                        </div>
+                        <div>
+                            <label class="tza-lbl">Fecha de nacimiento</label>
+                            <p:datePicker id="nacimiento" value="#{administradorBean.fechaNacimiento}" pattern="dd/MM/yyyy"
+                                          style="width:100%" inputStyle="width:100%"/>
+                        </div>
+                        <div>
+                            <label class="tza-lbl">Fecha de ingreso *</label>
+                            <p:datePicker id="ingreso" value="#{administradorBean.fechaIngreso}" pattern="dd/MM/yyyy"
+                                          style="width:100%" inputStyle="width:100%"/>
+                        </div>
+                    </div>
+
+                    <div class="tza-botones">
+                        <p:commandButton id="btnGuardar"
+                                         value="#{administradorBean.editando ? 'Guardar cambios' : 'Registrar administrador'}"
+                                         icon="pi pi-check" action="#{administradorBean.guardar}" ajax="false"/>
+                        <p:commandButton id="btnCancelarForm" value="Cancelar" icon="pi pi-times"
+                                         action="#{administradorBean.cancelar}" ajax="false" immediate="true"
+                                         styleClass="ui-button-outlined ui-button-secondary"/>
+                    </div>
+                    <p class="tza-nota">Al registrarlo se genera una contraseña temporal que se muestra una sola vez.</p>
+                </h:panelGroup>
+
+                <!-- ============ Lista ============ -->
+                <div class="tza-panel">
+                    <ui:repeat id="lista" value="#{administradorBean.administradores}" var="a">
+                        <div class="tza-fila">
+                            <div>
+                                <div>
+                                    <span class="tza-nombre"><h:outputText value="#{a.nombreCompleto}"/></span>
+                                    <span class="tza-estado #{a.usuario.activo ? 'tza-estado-activo' : 'tza-estado-inactivo'}">
+                                        <h:outputText value="#{a.usuario.activo ? 'Activo' : 'Inactivo'}"/>
+                                    </span>
+                                    <h:panelGroup id="marcaYo" rendered="#{administradorBean.esYo(a.usuario.correo)}">
+                                        <span class="tza-yo">Tú</span>
+                                    </h:panelGroup>
+                                </div>
+                                <div class="tza-datos">
+                                    <span><i class="pi pi-id-card"></i> <h:outputText value="#{a.documentoIdentidad}"/></span>
+                                    <span><i class="pi pi-envelope"></i> <h:outputText value="#{a.usuario.correo}"/></span>
+                                    <span><i class="pi pi-phone"></i> <h:outputText value="#{a.telefono}"/></span>
+                                    <span><i class="pi pi-calendar"></i> Ingreso:
+                                        <h:outputText value="#{a.fechaIngreso}">
+                                            <f:convertDateTime type="localDate" pattern="dd/MM/yyyy"/>
+                                        </h:outputText></span>
+                                </div>
+                            </div>
+
+                            <div class="tza-acciones">
+                                <p:commandButton id="btnEditar" value="Editar" icon="pi pi-pencil"
+                                                 action="#{administradorBean.editar(a)}" ajax="false" immediate="true"
+                                                 styleClass="ui-button-sm ui-button-outlined"/>
+                                <p:commandButton id="btnEstado"
+                                                 value="#{a.usuario.activo ? 'Desactivar' : 'Activar'}"
+                                                 icon="pi pi-power-off"
+                                                 action="#{administradorBean.cambiarEstado(a.id, a.nombreCompleto)}"
+                                                 ajax="false" immediate="true"
+                                                 rendered="#{not administradorBean.esYo(a.usuario.correo)}"
+                                                 styleClass="ui-button-sm ui-button-secondary ui-button-outlined"
+                                                 onclick="return confirm('¿Confirmas el cambio de estado de este administrador?');"/>
+                                <p:commandButton id="btnClave" value="Restablecer clave" icon="pi pi-key"
+                                                 action="#{administradorBean.restablecer(a.id, a.usuario.correo)}"
+                                                 ajax="false" immediate="true"
+                                                 styleClass="ui-button-sm ui-button-secondary ui-button-outlined"
+                                                 onclick="return confirm('Se generará una contraseña temporal nueva. ¿Continuar?');"/>
+                                <p:commandButton id="btnEliminar" value="Eliminar" icon="pi pi-trash"
+                                                 action="#{administradorBean.eliminar(a.id, a.nombreCompleto)}"
+                                                 ajax="false" immediate="true"
+                                                 rendered="#{not administradorBean.esYo(a.usuario.correo)}"
+                                                 styleClass="ui-button-sm ui-button-danger ui-button-outlined"
+                                                 onclick="return confirm('¿Eliminar este administrador definitivamente? Solo es posible si no tiene registros asociados. No se puede deshacer.');"/>
+                            </div>
+                        </div>
+                    </ui:repeat>
+
+                    <h:panelGroup id="vacio" layout="block" styleClass="tza-vacio"
+                                  rendered="#{empty administradorBean.administradores}">
+                        No hay administradores que coincidan con la búsqueda.
+                    </h:panelGroup>
+                </div>
+
+            </h:form>
+        </div>
+    </ui:define>
+
+</ui:composition>

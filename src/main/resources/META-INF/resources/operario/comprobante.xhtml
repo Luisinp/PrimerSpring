@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core">
+
+<h:head>
+    <title>Comprobante de pago - TravelZen</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <h:outputStylesheet library="assets" name="css/primeicons.css"/>
+    <h:outputStylesheet library="assets" name="css/reservas-personal.css"/>
+</h:head>
+
+<h:body styleClass="tzp-fondo-hoja">
+
+    <h:panelGroup id="noExiste" layout="block" styleClass="tzp-vacio tzp-hoja"
+                  rendered="#{comprobanteBean.comprobante == null}">
+        <h3>No se encontró el comprobante</h3>
+        <p><a href="reservas.xhtml">Volver a reservas</a></p>
+    </h:panelGroup>
+
+    <h:panelGroup id="conComprobante" rendered="#{comprobanteBean.comprobante != null}">
+
+        <!-- Botones: no salen al imprimir -->
+        <div class="tzp-acciones-hoja tzp-no-imprimir">
+            <a class="tzp-btn tzp-btn-borde" href="pagos.xhtml?id=#{comprobanteBean.idReserva}">
+                <i class="pi pi-arrow-left"></i> Volver a la reserva</a>
+            <button type="button" class="tzp-btn tzp-btn-primario" onclick="window.print()">
+                <i class="pi pi-print"></i> Imprimir o guardar PDF</button>
+        </div>
+
+        <article class="tzp-hoja">
+
+            <div class="tzp-hoja-cab">
+                <div>
+                    <div class="tzp-hoja-marca">TravelZen</div>
+                    <div class="tzp-hoja-sub">Agencia de viajes internacional</div>
+                </div>
+                <div class="tzp-hoja-num">
+                    <small>COMPROBANTE DE PAGO</small>
+                    <strong>N.º <h:outputText value="#{comprobanteBean.numero}"/></strong>
+                    <small>Emitido el
+                        <h:outputText value="#{comprobanteBean.comprobante.fechaEmision}">
+                            <f:convertDateTime type="localDateTime" pattern="dd/MM/yyyy HH:mm"/>
+                        </h:outputText></small>
+                </div>
+            </div>
+
+            <div class="tzp-hoja-grid">
+                <div>
+                    <small>Cliente</small>
+                    <strong><h:outputText value="#{comprobanteBean.comprobante.pago.reserva.cliente.nombreCompleto}"/></strong>
+                    <span>Documento: <h:outputText value="#{comprobanteBean.comprobante.pago.reserva.cliente.documentoIdentidad}"/></span>
+                </div>
+                <div>
+                    <small>Reserva</small>
+                    <strong><h:outputText value="#{comprobanteBean.comprobante.pago.reserva.codigoUnico}"/></strong>
+                    <span><h:outputText value="#{comprobanteBean.comprobante.pago.reserva.paquete.nombre}"/></span>
+                </div>
+                <div>
+                    <small>Viaje</small>
+                    <strong><h:outputText value="#{comprobanteBean.comprobante.pago.reserva.itinerario.destino}"/></strong>
+                    <span>
+                        <h:outputText value="#{comprobanteBean.comprobante.pago.reserva.itinerario.fechaInicio}">
+                            <f:convertDateTime type="localDate" pattern="dd/MM/yyyy"/>
+                        </h:outputText>
+                        al
+                        <h:outputText value="#{comprobanteBean.comprobante.pago.reserva.itinerario.fechaFin}">
+                            <f:convertDateTime type="localDate" pattern="dd/MM/yyyy"/>
+                        </h:outputText>
+                    </span>
+                </div>
+                <div>
+                    <small>Pago</small>
+                    <strong><h:outputText value="#{comprobanteBean.etiquetaMetodo(comprobanteBean.comprobante.pago.metodo)}"/></strong>
+                    <span>Fecha:
+                        <h:outputText value="#{comprobanteBean.comprobante.pago.fecha}">
+                            <f:convertDateTime type="localDate" pattern="dd/MM/yyyy"/>
+                        </h:outputText></span>
+                </div>
+                <div class="tzp-hoja-ancho">
+                    <small>Concepto</small>
+                    <strong><h:outputText value="#{comprobanteBean.comprobante.concepto}"/></strong>
+                </div>
+            </div>
+
+            <div class="tzp-hoja-importe">
+                <span>Importe pagado</span>
+                <strong>USD <h:outputText value="#{comprobanteBean.comprobante.importe}">
+                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                </h:outputText></strong>
+            </div>
+
+            <div class="tzp-hoja-linea">
+                <span>Total de la reserva</span>
+                <strong>USD <h:outputText value="#{comprobanteBean.comprobante.pago.reserva.montoTotal}">
+                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                </h:outputText></strong>
+            </div>
+            <div class="tzp-hoja-linea">
+                <span>Saldo restante</span>
+                <strong>USD <h:outputText value="#{comprobanteBean.comprobante.saldoRestante}">
+                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                </h:outputText></strong>
+            </div>
+            <div class="tzp-hoja-linea">
+                <span>Atendido por</span>
+                <strong><h:outputText value="#{comprobanteBean.atendidoPor}"/></strong>
+            </div>
+
+            <div class="tzp-hoja-pie">
+                Comprobante interno de la agencia. No tiene validez fiscal.
+            </div>
+        </article>
+
+    </h:panelGroup>
+
+</h:body>
+</html>

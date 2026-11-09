@@ -1,0 +1,44 @@
+/* Administradores (admin/administradores.xhtml). Prefijo tza- para no chocar con otros estilos. */
+
+.tza-pagina { max-width: 1100px; margin: 0 auto; padding: 8px 0 40px; }
+.tza-cabecera { display: flex; justify-content: space-between; align-items: flex-end;
+                gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+.tza-titulo { margin: 0; font-size: 1.7rem; color: #0b3b60; }
+.tza-sub { margin: 4px 0 0; color: #5b6b7b; }
+
+.tza-panel { background: #fff; border-radius: 14px; padding: 18px 20px; margin: 14px 0;
+             box-shadow: 0 2px 12px rgba(11, 59, 96, .08); }
+.tza-seccion { margin: 0 0 12px; font-size: 1.1rem; color: #0b3b60; }
+.tza-lbl { display: block; font-size: .8rem; font-weight: 600; color: #475569; margin-bottom: 4px; }
+.tza-nota { color: #64748b; font-size: .85rem; margin: 6px 0 0; }
+
+.tza-filtros { display: grid; grid-template-columns: 2fr 1fr auto; gap: 12px; align-items: end; }
+.tza-botones { display: flex; flex-wrap: wrap; gap: 8px; }
+.tza-campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; margin-bottom: 12px; }
+.tza-ancho { grid-column: 1 / -1; }
+
+.tza-clave { background: #fff8e1; border: 1px solid #f0c36d; border-radius: 12px;
+             padding: 14px 18px; margin: 14px 0; }
+.tza-codigo { font-family: ui-monospace, Consolas, monospace; font-size: 1.5rem;
+              letter-spacing: 2px; font-weight: 700; color: #0b3b60; margin: 6px 0; }
+
+.tza-fila { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center;
+            padding: 14px 0; border-bottom: 1px solid #eef2f6; }
+.tza-fila:last-child { border-bottom: 0; }
+.tza-nombre { font-weight: 700; color: #0f2a43; }
+.tza-datos { display: flex; flex-wrap: wrap; gap: 4px 18px; color: #475569; font-size: .9rem; margin-top: 4px; }
+.tza-acciones { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+
+.tza-estado { padding: 3px 10px; border-radius: 999px; font-size: .75rem; font-weight: 700; margin-left: 8px; }
+.tza-estado-activo { background: #e0f5ec; color: #047857; }
+.tza-estado-inactivo { background: #fde8e8; color: #b91c1c; }
+.tza-yo { background: #e8eef5; color: #334e68; padding: 3px 10px; border-radius: 999px;
+          font-size: .75rem; font-weight: 700; margin-left: 6px; }
+.tza-vacio { text-align: center; padding: 28px 16px; color: #5b6b7b; }
+
+@media (max-width: 800px) {
+    .tza-filtros { grid-template-columns: 1fr; }
+    .tza-campos { grid-template-columns: 1fr; }
+    .tza-fila { grid-template-columns: 1fr; }
+    .tza-acciones { justify-content: flex-start; }
+}

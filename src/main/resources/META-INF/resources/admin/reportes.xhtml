@@ -1,0 +1,163 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="jakarta.faces.facelets"
+    template="../templates/template.xhtml">
+
+    <ui:define name="titulo">
+        Reportes - TravelZen
+    </ui:define>
+
+    <ui:define name="bienvenida"/>
+
+    <ui:define name="contenido">
+        <h:outputStylesheet library="assets" name="css/reportes.css" target="head"/>
+
+        <div class="tzr-pagina">
+
+            <div class="tzr-cabecera">
+                <h1 class="tzr-titulo">Reportes</h1>
+                <p class="tzr-sub">Consulta la información de la agencia por periodo y descárgala en PDF o Excel.</p>
+            </div>
+
+            <h:form id="frmReporte">
+
+                <p:messages id="msgs" showDetail="false" closable="true"/>
+
+                <!-- Enter ejecuta Ver reporte, nunca una descarga -->
+                <p:defaultCommand target="btnVer"/>
+
+                <div class="tzr-panel">
+                    <h2 class="tzr-seccion">Elige el reporte</h2>
+                    <div class="tzr-filtros">
+                        <div>
+                            <label class="tzr-lbl">Tipo de reporte *</label>
+                            <p:selectOneMenu id="tipo" value="#{reporteBean.tipo}" style="width:100%">
+                                <f:selectItem itemValue="INGRESOS" itemLabel="Ingresos y pagos"/>
+                                <f:selectItem itemValue="RESERVAS" itemLabel="Reservas por estado y periodo"/>
+                                <f:selectItem itemValue="CLIENTES" itemLabel="Clientes"/>
+                                <f:selectItem itemValue="PAQUETES" itemLabel="Paquetes comercializados"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div>
+                            <label class="tzr-lbl">Desde *</label>
+                            <p:datePicker id="desde" value="#{reporteBean.fechaInicio}" pattern="dd/MM/yyyy"
+                                          style="width:100%" inputStyle="width:100%"/>
+                        </div>
+                        <div>
+                            <label class="tzr-lbl">Hasta *</label>
+                            <p:datePicker id="hasta" value="#{reporteBean.fechaFin}" pattern="dd/MM/yyyy"
+                                          style="width:100%" inputStyle="width:100%"/>
+                        </div>
+                        <div>
+                            <label class="tzr-lbl">Estado (solo Reservas)</label>
+                            <p:selectOneMenu id="estado" value="#{reporteBean.estado}" style="width:100%">
+                                <f:selectItem itemValue="TODOS" itemLabel="Todos"/>
+                                <f:selectItem itemValue="PENDIENTE" itemLabel="Pendientes"/>
+                                <f:selectItem itemValue="CONFIRMADA" itemLabel="Confirmadas"/>
+                                <f:selectItem itemValue="FINALIZADA" itemLabel="Finalizadas"/>
+                                <f:selectItem itemValue="CANCELADA" itemLabel="Canceladas"/>
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+
+                    <div class="tzr-botones">
+                        <p:commandButton id="btnVer" value="Ver reporte" icon="pi pi-search"
+                                         action="#{reporteBean.ver}" ajax="false"/>
+                        <p:commandButton id="btnPdf" value="Descargar PDF" icon="pi pi-file-pdf"
+                                         action="#{reporteBean.descargarPdf}" ajax="false"
+                                         styleClass="ui-button-danger ui-button-outlined"/>
+                        <p:commandButton id="btnExcel" value="Descargar Excel" icon="pi pi-file-excel"
+                                         action="#{reporteBean.descargarExcel}" ajax="false"
+                                         styleClass="ui-button-success ui-button-outlined"/>
+                    </div>
+                    <p class="tzr-nota">Los ingresos se cuentan por la fecha del pago; las demás listas, por la fecha de registro de la reserva.</p>
+                </div>
+
+                <!-- ============ Resultado ============ -->
+                <h:panelGroup id="resultado" layout="block" rendered="#{reporteBean.tabla != null}">
+
+                    <div class="tzr-resumen">
+                        <ui:repeat id="chips" value="#{reporteBean.resumen}" var="e">
+                            <div class="tzr-chip">
+                                <strong><h:outputText value="#{e.value}"/></strong>
+                                <span><h:outputText value="#{e.key}"/></span>
+                            </div>
+                        </ui:repeat>
+                    </div>
+
+                    <div class="tzr-panel">
+                        <div class="tzr-resultado-cab">
+                            <h2><h:outputText value="#{reporteBean.tabla.titulo}"/></h2>
+                            <small><h:outputText value="#{reporteBean.tabla.periodo}"/></small>
+                        </div>
+
+                        <h:panelGroup id="sinDatos" layout="block" styleClass="tzr-vacio"
+                                      rendered="#{reporteBean.tabla.vacia}">
+                            No hay datos en el periodo elegido.
+                        </h:panelGroup>
+
+                        <h:panelGroup id="conDatos" layout="block" styleClass="tzr-tabla-caja"
+                                      rendered="#{not reporteBean.tabla.vacia}">
+                            <table class="tzr-tabla">
+                                <thead>
+                                    <tr>
+                                        <ui:repeat id="cabeceras" value="#{reporteBean.tabla.columnas}" var="col" varStatus="sc">
+                                            <th class="#{reporteBean.tabla.esMonto(sc.index) ? 'tzr-der' : ''}"><h:outputText value="#{col}"/></th>
+                                        </ui:repeat>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat id="filas" value="#{reporteBean.tabla.filasTexto}" var="fila">
+                                        <tr>
+                                            <ui:repeat id="celdas" value="#{fila}" var="celda" varStatus="st">
+                                                <td class="#{reporteBean.tabla.esMonto(st.index) ? 'tzr-der' : ''}"><h:outputText value="#{celda}"/></td>
+                                            </ui:repeat>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+                        </h:panelGroup>
+                    </div>
+                </h:panelGroup>
+
+                <!-- ============ Reportes recientes ============ -->
+                <div class="tzr-panel">
+                    <h2 class="tzr-seccion">Reportes generados recientemente</h2>
+                    <ui:repeat id="recientes" value="#{reporteBean.recientes}" var="h">
+                        <div class="tzr-reciente">
+                            <div>
+                                <strong><h:outputText value="#{reporteBean.etiquetaTipo(h.tipo)}"/></strong>
+                                <small>
+                                    <h:outputText value="#{h.fechaInicio}">
+                                        <f:convertDateTime type="localDate" pattern="dd/MM/yyyy"/>
+                                    </h:outputText>
+                                    al
+                                    <h:outputText value="#{h.fechaFin}">
+                                        <f:convertDateTime type="localDate" pattern="dd/MM/yyyy"/>
+                                    </h:outputText>
+                                </small>
+                            </div>
+                            <span class="tzr-etiqueta tzr-etiqueta-#{h.formato}">
+                                <h:outputText value="#{reporteBean.etiquetaFormato(h.formato)}"/>
+                            </span>
+                            <small>
+                                <h:outputText value="#{h.fechaGeneracion}">
+                                    <f:convertDateTime type="localDateTime" pattern="dd/MM/yyyy HH:mm"/>
+                                </h:outputText>
+                            </small>
+                        </div>
+                    </ui:repeat>
+                    <h:panelGroup id="sinRecientes" layout="block" styleClass="tzr-nota"
+                                  rendered="#{empty reporteBean.recientes}">
+                        Todavía no se generó ningún reporte.
+                    </h:panelGroup>
+                </div>
+
+            </h:form>
+        </div>
+    </ui:define>
+
+</ui:composition>

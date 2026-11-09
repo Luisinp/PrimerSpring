@@ -63,5 +63,14 @@ public interface PaqueteRepository extends JpaRepository<PaqueteTuristico, Integ
             where p.id = :id and p.cuposDisponibles >= :n
             """)
     int descontarCupos(@Param("id") Integer id, @Param("n") int n);
+ 
+    /** Devuelve cupos al paquete (al cancelar una reserva). */
+    @Modifying(flushAutomatically = true)
+    @Query("""
+            update PaqueteTuristico p
+            set p.cuposDisponibles = p.cuposDisponibles + :n
+            where p.id = :id
+            """)
+    int devolverCupos(@Param("id") Integer id, @Param("n") int n);
 }
  

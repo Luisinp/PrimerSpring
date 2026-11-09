@@ -1,0 +1,189 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="jakarta.faces.facelets"
+    template="../templates/template.xhtml">
+
+    <ui:define name="titulo">
+        Reservas - TravelZen
+    </ui:define>
+
+    <!-- Se oculta el bloque de bienvenida para dejar más espacio al panel -->
+    <ui:define name="bienvenida"/>
+
+    <ui:define name="contenido">
+        <h:outputStylesheet library="assets" name="css/reservas-personal.css" target="head"/>
+
+        <div class="tzp-pagina">
+
+            <div class="tzp-cabecera">
+                <div>
+                    <h1 class="tzp-titulo">Reservas</h1>
+                    <p class="tzp-sub">Confirma, cancela y da seguimiento a las reservas de los clientes.</p>
+                </div>
+                <p:button id="btnNueva" value="Nueva reserva" icon="pi pi-plus"
+                          outcome="/operario/reserva-nueva.xhtml"/>
+            </div>
+
+            <!-- Aviso al volver de registrar una reserva: ?nueva=CODIGO -->
+            <h:panelGroup id="avisoNueva" layout="block" styleClass="tzp-exito"
+                          rendered="#{param.nueva != null}">
+                La reserva <strong><h:outputText value="#{param.nueva}"/></strong> fue registrada.
+            </h:panelGroup>
+
+            <h:form id="frmReservas">
+
+                <p:messages id="msgs" showDetail="false" closable="true"/>
+
+                <!-- ============ Resumen por estado ============ -->
+                <div class="tzp-resumen">
+                    <div class="tzp-chip tzp-chip-PENDIENTE">
+                        <strong><h:outputText value="#{gestionReservasBean.conteo['PENDIENTE']}"/></strong>
+                        <span>Pendientes</span>
+                    </div>
+                    <div class="tzp-chip tzp-chip-CONFIRMADA">
+                        <strong><h:outputText value="#{gestionReservasBean.conteo['CONFIRMADA']}"/></strong>
+                        <span>Confirmadas</span>
+                    </div>
+                    <div class="tzp-chip tzp-chip-FINALIZADA">
+                        <strong><h:outputText value="#{gestionReservasBean.conteo['FINALIZADA']}"/></strong>
+                        <span>Finalizadas</span>
+                    </div>
+                    <div class="tzp-chip tzp-chip-CANCELADA">
+                        <strong><h:outputText value="#{gestionReservasBean.conteo['CANCELADA']}"/></strong>
+                        <span>Canceladas</span>
+                    </div>
+                </div>
+
+                <!-- ============ Filtros ============ -->
+                <div class="tzp-filtros">
+                    <div>
+                        <label class="tzp-lbl">Buscar</label>
+                        <p:inputText id="texto" value="#{gestionReservasBean.texto}" styleClass="w-full"
+                                     placeholder="Código, nombre o documento del cliente"/>
+                    </div>
+                    <div>
+                        <label class="tzp-lbl">Estado</label>
+                        <p:selectOneMenu id="estado" value="#{gestionReservasBean.estado}" style="width:100%">
+                            <f:selectItem itemValue="TODOS" itemLabel="Todos los estados"/>
+                            <f:selectItem itemValue="PENDIENTE" itemLabel="Pendientes"/>
+                            <f:selectItem itemValue="CONFIRMADA" itemLabel="Confirmadas"/>
+                            <f:selectItem itemValue="FINALIZADA" itemLabel="Finalizadas"/>
+                            <f:selectItem itemValue="CANCELADA" itemLabel="Canceladas"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="tzp-filtros-botones">
+                        <p:commandButton id="btnBuscar" value="Buscar" icon="pi pi-search"
+                                         action="#{gestionReservasBean.buscar}" ajax="false"/>
+                        <p:commandButton id="btnLimpiar" value="Limpiar" icon="pi pi-times"
+                                         action="#{gestionReservasBean.limpiar}" ajax="false"
+                                         styleClass="ui-button-outlined ui-button-secondary"/>
+                    </div>
+                </div>
+
+                <!-- ============ Lista ============ -->
+                <ui:repeat id="lista" value="#{gestionReservasBean.reservas}" var="r">
+                    <article class="tzp-reserva">
+
+                        <div class="tzp-cab">
+                            <span class="tzp-codigo"><h:outputText value="#{r.codigoUnico}"/></span>
+                            <span class="tzp-estado tzp-estado-#{r.estado}">
+                                <h:outputText value="#{gestionReservasBean.etiquetaEstado(r.estado)}"/>
+                            </span>
+                        </div>
+
+                        <h3 class="tzp-paquete"><h:outputText value="#{r.paquete.nombre}"/></h3>
+
+                        <div class="tzp-datos">
+                            <span><i class="pi pi-user"></i>
+                                <strong><h:outputText value="#{r.cliente.nombreCompleto}"/></strong>
+                                · <h:outputText value="#{r.cliente.documentoIdentidad}"/></span>
+                            <span><i class="pi pi-map-marker"></i>
+                                <h:outputText value="#{r.itinerario.origen}"/> →
+                                <strong><h:outputText value="#{r.itinerario.destino}"/></strong></span>
+                            <span><i class="pi pi-calendar"></i>
+                                <h:outputText value="#{r.itinerario.fechaInicio}">
+                                    <f:convertDateTime type="localDate" pattern="dd/MM/yyyy"/>
+                                </h:outputText>
+                                al
+                                <h:outputText value="#{r.itinerario.fechaFin}">
+                                    <f:convertDateTime type="localDate" pattern="dd/MM/yyyy"/>
+                                </h:outputText></span>
+                            <span><i class="pi pi-users"></i>
+                                <h:outputText value="#{r.pasajeros.size()} pasajero(s)"/></span>
+                            <span>Total: <strong>USD
+                                <h:outputText value="#{r.montoTotal}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText></strong></span>
+                            <span>Pago: <strong>
+                                <h:outputText value="#{gestionReservasBean.etiquetaPago(r.estadoPago)}"/></strong></span>
+                            <span>Registrada el
+                                <h:outputText value="#{r.fechaRegistro}">
+                                    <f:convertDateTime type="localDateTime" pattern="dd/MM/yyyy HH:mm"/>
+                                </h:outputText>
+                                por <h:outputText value="#{r.registradoPor.correo}"/></span>
+                        </div>
+
+                        <!-- Acciones: solo aparecen las que son válidas para el estado actual -->
+                        <div class="tzp-botones">
+                            <p:commandButton id="btnConfirmar" value="Confirmar" icon="pi pi-check"
+                                             action="#{gestionReservasBean.confirmar(r.id)}" ajax="false"
+                                             rendered="#{r.estado eq 'PENDIENTE'}"/>
+                            <p:commandButton id="btnFinalizar" value="Finalizar" icon="pi pi-flag"
+                                             action="#{gestionReservasBean.finalizar(r.id)}" ajax="false"
+                                             rendered="#{r.estado eq 'CONFIRMADA'}"
+                                             styleClass="ui-button-success"/>
+                            <p:commandButton id="btnCancelar" value="Cancelar reserva" icon="pi pi-ban"
+                                             action="#{gestionReservasBean.cancelar(r.id)}" ajax="false"
+                                             rendered="#{r.estado eq 'PENDIENTE' or r.estado eq 'CONFIRMADA'}"
+                                             styleClass="ui-button-danger ui-button-outlined"
+                                             onclick="return confirm('¿Cancelar esta reserva? Los cupos volverán al paquete y no se podrá reactivar.');"/>
+                            <p:button id="btnPagos" value="Pagos" icon="pi pi-wallet"
+                                      outcome="/operario/pagos.xhtml"
+                                      styleClass="ui-button-secondary ui-button-outlined">
+                                <f:param name="id" value="#{r.id}"/>
+                            </p:button>
+                            <p:commandButton id="btnHistorial"
+                                             value="#{gestionReservasBean.historialDe eq r.id ? 'Ocultar historial' : 'Ver historial'}"
+                                             icon="pi pi-history"
+                                             action="#{gestionReservasBean.alternarHistorial(r.id)}" ajax="false"
+                                             styleClass="ui-button-secondary ui-button-outlined"/>
+                        </div>
+
+                        <!-- Historial de cambios de estado -->
+                        <h:panelGroup id="panelHistorial" layout="block" styleClass="tzp-historial"
+                                      rendered="#{gestionReservasBean.historialDe eq r.id}">
+                            <h4>Historial de cambios</h4>
+                            <ui:repeat id="movs" value="#{gestionReservasBean.historial}" var="h">
+                                <div class="tzp-mov">
+                                    <span class="tzp-punto"></span>
+                                    <div>
+                                        <strong><h:outputText value="#{gestionReservasBean.descripcionCambio(h.estadoAnterior, h.estadoNuevo)}"/></strong>
+                                        <small>
+                                            <h:outputText value="#{h.fechaCambio}">
+                                                <f:convertDateTime type="localDateTime" pattern="dd/MM/yyyy HH:mm"/>
+                                            </h:outputText>
+                                            · <h:outputText value="#{h.usuario.correo}"/>
+                                            (<h:outputText value="#{gestionReservasBean.etiquetaRol(h.usuario.rol.nombre)}"/>)
+                                        </small>
+                                    </div>
+                                </div>
+                            </ui:repeat>
+                        </h:panelGroup>
+
+                    </article>
+                </ui:repeat>
+
+                <h:panelGroup id="vacio" layout="block" styleClass="tzp-vacio"
+                              rendered="#{empty gestionReservasBean.reservas}">
+                    <h3>No hay reservas con esos filtros</h3>
+                    <p>Prueba con otro estado o borra la búsqueda.</p>
+                </h:panelGroup>
+
+            </h:form>
+        </div>
+    </ui:define>
+
+</ui:composition>

@@ -30,7 +30,8 @@ public class ReservaBean {
     private final ReservaService reservaService;
     private final CatalogoService catalogoService;
  
-    private Integer idPaquete;              // viene de la dirección (?id=...)
+    // Llega de la dirección (?id=...) y viaja después en un campo oculto del formulario
+    private Integer idPaquete;
     private PaqueteTuristico paquete;
     private boolean paqueteCargado;
  
@@ -45,10 +46,11 @@ public class ReservaBean {
  
     // ================= Paquete =================
  
-    /** null si no existe o ya no está publicado. */
+    /** null si no existe, no se indicó el id o ya no está publicado. */
     public PaqueteTuristico getPaquete() {
         if (!paqueteCargado) {
-            paquete = catalogoService.detalle(idEfectivo()).orElse(null);
+            Integer id = idEfectivo();
+            paquete = (id == null) ? null : catalogoService.detalle(id).orElse(null);
             paqueteCargado = true;
         }
         return paquete;
@@ -112,8 +114,10 @@ public class ReservaBean {
     public String reservar() {
         try {
             Reserva r = reservaService.reservar(usuarioActual(), idEfectivo(), fechaInicio, origen, getPasajeros());
+            log.info("Reserva {} registrada ({} pasajero(s))", r.getCodigoUnico(), getPasajeros().size());
             return "/cliente/mis-reservas?faces-redirect=true&nueva=" + r.getCodigoUnico();
         } catch (IllegalArgumentException e) {
+            log.warn("Reserva rechazada: {}", e.getMessage());
             error(e.getMessage());
         } catch (RuntimeException e) {
             log.error("Error al registrar la reserva", e);
@@ -129,14 +133,23 @@ public class ReservaBean {
         return FacesContext.getCurrentInstance().getExternalContext().getRemoteUser();
     }
  
-    // Usa lo que dejó f:viewParam; si aún no llegó, lo lee de la dirección (?id=...)
+    // Orden: el id guardado (campo oculto o viewParam), el del paquete ya cargado,
+    // o el de la dirección (?id=...). Si lo encuentra en la dirección, lo recuerda.
     private Integer idEfectivo() {
         if (idPaquete != null) {
             return idPaquete;
         }
+        if (paquete != null) {
+            idPaquete = paquete.getId();
+            return idPaquete;
+        }
         String valor = FacesContext.getCurrentInstance().getExternalContext()
                 .getRequestParameterMap().get("id");
-        return valor != null && valor.matches("\\d{1,9}") ? Integer.valueOf(valor) : null;
+        if (valor != null && valor.matches("\\d{1,9}")) {
+            idPaquete = Integer.valueOf(valor);
+            return idPaquete;
+        }
+        return null;
     }
  
     private void error(String mensaje) {
@@ -147,7 +160,14 @@ public class ReservaBean {
     // ================= Getters y setters =================
  
     public Integer getIdPaquete() { return idPaquete; }
-    public void setIdPaquete(Integer idPaquete) { this.idPaquete = idPaquete; }
+ 
+    // f:viewParam y el campo oculto pueden volver a aplicarse en cada envío del formulario.
+    // Si llegan vacíos, no debemos perder el paquete elegido: ignoramos los valores nulos.
+    public void setIdPaquete(Integer idPaquete) {
+        if (idPaquete != null) {
+            this.idPaquete = idPaquete;
+        }
+    }
  
     public LocalDate getFechaInicio() { return fechaInicio; }
     public void setFechaInicio(LocalDate fechaInicio) { this.fechaInicio = fechaInicio; }

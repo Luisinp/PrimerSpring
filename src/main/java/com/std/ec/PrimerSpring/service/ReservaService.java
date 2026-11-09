@@ -23,7 +23,7 @@ import com.std.ec.PrimerSpring.repository.ReservaRepository;
 import com.std.ec.PrimerSpring.repository.UsuarioRepository;
  
 /**
- * Reservas de paquetes hechas por el cliente desde la web (CU-02).
+ * Reservas de paquetes (CU-02): las hace el cliente desde la web o el personal a nombre de un cliente.
  * Todo ocurre en una sola transacción: si algo falla, no se descuentan cupos ni queda nada a medias.
  */
 @Service
@@ -73,7 +73,26 @@ public class ReservaService {
                 .orElse(List.of());
     }
  
-    /** Lanza IllegalArgumentException con un mensaje apto para mostrar al cliente. */
+    // ---------------- Apoyo para la reserva hecha por el personal ----------------
+ 
+    /** Clientes activos que coinciden con el texto (nombre, documento o correo). Máximo 15. */
+    @Transactional(readOnly = true)
+    public List<Cliente> buscarClientesActivos(String texto) {
+        String t = texto == null ? "" : texto.trim();
+        return clienteRepository.buscar(t, List.of(Boolean.TRUE), "TODOS").stream().limit(15).toList();
+    }
+ 
+    /** Paquetes publicados y activos que todavía tienen cupos. */
+    @Transactional(readOnly = true)
+    public List<PaqueteTuristico> paquetesDisponibles() {
+        return paqueteRepository.catalogo(0, "").stream()
+                .filter(p -> p.getCuposDisponibles() != null && p.getCuposDisponibles() > 0)
+                .toList();
+    }
+ 
+    // ---------------- Reservar ----------------
+ 
+    /** Reserva del cliente desde la web. Lanza IllegalArgumentException con un mensaje apto para mostrar. */
     @Transactional
     public Reserva reservar(String correoUsuario, Integer idPaquete, LocalDate fechaInicio,
                             String origen, List<PasajeroDatos> pasajeros) {
@@ -87,6 +106,63 @@ public class ReservaService {
             throw new IllegalArgumentException("Tu registro de cliente está inactivo. Acércate a la agencia.");
         }
  
+        return crear(usuario, cliente, idPaquete, fechaInicio, origen, pasajeros);
+    }
+ 
+    /**
+     * Reserva registrada por un agente o administrador a nombre de un cliente (con o sin cuenta web).
+     * Si confirmarDeInmediato es true, queda CONFIRMADA y el historial guarda los dos movimientos.
+     */
+    @Transactional
+    public Reserva reservarPorPersonal(String correoPersonal, Integer idCliente, Integer idPaquete,
+                                       LocalDate fechaInicio, String origen,
+                                       List<PasajeroDatos> pasajeros, boolean confirmarDeInmediato) {
+ 
+        Usuario usuario = usuarioRepository.findByCorreo(correoPersonal)
+                .orElseThrow(() -> new IllegalArgumentException("Inicia sesión para continuar."));
+        String rol = usuario.getRol().getNombre();
+        boolean esAgente = "AGENTE".equals(rol);
+        boolean esAdmin = "ADMIN".equals(rol);
+        if (!esAgente && !esAdmin) {
+            throw new IllegalArgumentException("Solo el personal de la agencia puede registrar reservas a nombre de un cliente.");
+        }
+ 
+        if (idCliente == null) {
+            throw new IllegalArgumentException("Elige el cliente de la reserva.");
+        }
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(() -> new IllegalArgumentException("El cliente ya no existe."));
+        if (!Boolean.TRUE.equals(cliente.getActivo())) {
+            throw new IllegalArgumentException("El cliente está inactivo y no puede tener nuevas reservas.");
+        }
+ 
+        Reserva reserva = crear(usuario, cliente, idPaquete, fechaInicio, origen, pasajeros);
+ 
+        // Quien la registra queda como responsable (un agente o un administrador, nunca los dos)
+        if (esAgente && reservaRepository.contarAgente(usuario.getId()) > 0) {
+            reserva.setIdAgente(usuario.getId());
+        } else if (esAdmin && reservaRepository.contarAdministrador(usuario.getId()) > 0) {
+            reserva.setIdAdministrador(usuario.getId());
+        }
+ 
+        if (confirmarDeInmediato) {
+            reserva.setEstado("CONFIRMADA");
+            registrarHistorial(reserva, usuario, "PENDIENTE", "CONFIRMADA");
+        }
+        reservaRepository.save(reserva);
+ 
+        return reserva;
+    }
+ 
+    // ---------------- Auxiliares ----------------
+ 
+    /** Valida, descuenta cupos y guarda la reserva en estado PENDIENTE con su itinerario, pasajeros e historial. */
+    private Reserva crear(Usuario usuario, Cliente cliente, Integer idPaquete, LocalDate fechaInicio,
+                          String origen, List<PasajeroDatos> pasajeros) {
+ 
+        if (idPaquete == null) {
+            throw new IllegalArgumentException("Elige un paquete.");
+        }
         PaqueteTuristico paquete = paqueteRepository.buscarPublicado(idPaquete)
                 .orElseThrow(() -> new IllegalArgumentException("Este paquete ya no está disponible."));
  
@@ -132,17 +208,19 @@ public class ReservaService {
         }
         reservaRepository.save(reserva);
  
-        HistorialEstadoReserva historial = new HistorialEstadoReserva();
-        historial.setReserva(reserva);
-        historial.setUsuario(usuario);
-        historial.setEstadoAnterior(null);
-        historial.setEstadoNuevo("PENDIENTE");
-        historialRepository.save(historial);
+        registrarHistorial(reserva, usuario, null, "PENDIENTE");
  
         return reserva;
     }
  
-    // ---------------- Auxiliares ----------------
+    private void registrarHistorial(Reserva reserva, Usuario usuario, String anterior, String nuevo) {
+        HistorialEstadoReserva historial = new HistorialEstadoReserva();
+        historial.setReserva(reserva);
+        historial.setUsuario(usuario);
+        historial.setEstadoAnterior(anterior);
+        historial.setEstadoNuevo(nuevo);
+        historialRepository.save(historial);
+    }
  
     private Optional<Cliente> buscarCliente(String correoUsuario) {
         if (correoUsuario == null) {
@@ -157,7 +235,7 @@ public class ReservaService {
             throw new IllegalArgumentException("Elige una fecha de viaje posterior a hoy.");
         }
         if (origen == null || origen.isBlank()) {
-            throw new IllegalArgumentException("Indica tu ciudad de salida.");
+            throw new IllegalArgumentException("Indica la ciudad de salida.");
         }
         if (pasajeros == null || pasajeros.isEmpty()) {
             throw new IllegalArgumentException("Agrega al menos un pasajero.");

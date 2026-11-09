@@ -1,0 +1,180 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="jakarta.faces.facelets"
+    template="../templates/template.xhtml">
+
+    <ui:define name="titulo">
+        Pagos - TravelZen
+    </ui:define>
+
+    <ui:define name="bienvenida"/>
+
+    <ui:define name="contenido">
+        <h:outputStylesheet library="assets" name="css/reservas-personal.css" target="head"/>
+
+        <div class="tzp-pagina">
+
+            <!-- Reserva inexistente o sin id -->
+            <h:panelGroup id="noExiste" layout="block" styleClass="tzp-vacio"
+                          rendered="#{pagoBean.reserva == null}">
+                <h3>No se encontró la reserva</h3>
+                <p><a href="reservas.xhtml">Volver a reservas</a></p>
+            </h:panelGroup>
+
+            <h:panelGroup id="conReserva" rendered="#{pagoBean.reserva != null}">
+
+                <div class="tzp-cabecera">
+                    <div>
+                        <h1 class="tzp-titulo">Pagos de la reserva <h:outputText value="#{pagoBean.reserva.codigoUnico}"/></h1>
+                        <p class="tzp-sub">Registra los pagos del cliente y consulta su saldo.</p>
+                    </div>
+                    <p:button id="btnVolver" value="Volver a reservas" icon="pi pi-arrow-left"
+                              outcome="/operario/reservas.xhtml"
+                              styleClass="ui-button-outlined ui-button-secondary"/>
+                </div>
+
+                <!-- ============ Datos de la reserva ============ -->
+                <article class="tzp-reserva">
+                    <div class="tzp-cab">
+                        <span class="tzp-codigo"><h:outputText value="#{pagoBean.reserva.codigoUnico}"/></span>
+                        <span class="tzp-estado tzp-estado-#{pagoBean.reserva.estado}">
+                            <h:outputText value="#{pagoBean.etiquetaEstado(pagoBean.reserva.estado)}"/>
+                        </span>
+                    </div>
+                    <h3 class="tzp-paquete"><h:outputText value="#{pagoBean.reserva.paquete.nombre}"/></h3>
+                    <div class="tzp-datos">
+                        <span><i class="pi pi-user"></i>
+                            <strong><h:outputText value="#{pagoBean.reserva.cliente.nombreCompleto}"/></strong>
+                            · <h:outputText value="#{pagoBean.reserva.cliente.documentoIdentidad}"/></span>
+                        <span><i class="pi pi-map-marker"></i>
+                            <h:outputText value="#{pagoBean.reserva.itinerario.destino}"/></span>
+                        <span><i class="pi pi-calendar"></i>
+                            <h:outputText value="#{pagoBean.reserva.itinerario.fechaInicio}">
+                                <f:convertDateTime type="localDate" pattern="dd/MM/yyyy"/>
+                            </h:outputText>
+                            al
+                            <h:outputText value="#{pagoBean.reserva.itinerario.fechaFin}">
+                                <f:convertDateTime type="localDate" pattern="dd/MM/yyyy"/>
+                            </h:outputText></span>
+                        <span>Pago: <strong>
+                            <h:outputText value="#{pagoBean.etiquetaPago(pagoBean.reserva.estadoPago)}"/></strong></span>
+                    </div>
+                </article>
+
+                <!-- ============ Total, pagado y saldo ============ -->
+                <div class="tzp-saldos">
+                    <div class="tzp-chip tzp-chip-TOTAL">
+                        <strong>USD <h:outputText value="#{pagoBean.reserva.montoTotal}">
+                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                        </h:outputText></strong>
+                        <span>Total de la reserva</span>
+                    </div>
+                    <div class="tzp-chip tzp-chip-PAGADO">
+                        <strong>USD <h:outputText value="#{pagoBean.totalPagado}">
+                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                        </h:outputText></strong>
+                        <span>Pagado</span>
+                    </div>
+                    <div class="tzp-chip tzp-chip-SALDO">
+                        <strong>USD <h:outputText value="#{pagoBean.saldo}">
+                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                        </h:outputText></strong>
+                        <span>Saldo pendiente</span>
+                    </div>
+                </div>
+
+                <!-- ============ Registrar pago ============ -->
+                <h:form id="frmPago">
+
+                    <p:messages id="msgs" showDetail="false" closable="true"/>
+
+                    <h:panelGroup id="formPago" layout="block" styleClass="tzp-form"
+                                  rendered="#{pagoBean.puedePagar}">
+                        <h2 class="tzp-seccion">Registrar pago</h2>
+                        <div class="tzp-campos">
+                            <div>
+                                <label class="tzp-lbl">Monto (USD) *</label>
+                                <p:inputNumber id="monto" value="#{pagoBean.monto}" decimalPlaces="2"
+                                               decimalSeparator="." thousandSeparator=","
+                                               minValue="0.01" style="width:100%" inputStyle="width:100%"/>
+                            </div>
+                            <div>
+                                <label class="tzp-lbl">Método de pago *</label>
+                                <p:selectOneMenu id="metodo" value="#{pagoBean.metodo}" style="width:100%">
+                                    <f:selectItem itemValue="EFECTIVO" itemLabel="Efectivo"/>
+                                    <f:selectItem itemValue="TRANSFERENCIA" itemLabel="Transferencia"/>
+                                </p:selectOneMenu>
+                            </div>
+                            <div>
+                                <label class="tzp-lbl">Fecha del pago *</label>
+                                <p:datePicker id="fechaPago" value="#{pagoBean.fecha}" pattern="dd/MM/yyyy"
+                                              maxdate="#{pagoBean.hoy}" style="width:100%" inputStyle="width:100%"/>
+                            </div>
+                            <div>
+                                <label class="tzp-lbl">Concepto (opcional)</label>
+                                <p:inputText id="concepto" value="#{pagoBean.concepto}" styleClass="w-full"
+                                             maxlength="150" placeholder="Ej.: Adelanto del 50 %"/>
+                            </div>
+                        </div>
+                        <p class="tzp-nota">El pago no puede superar el saldo pendiente. Al registrarlo se genera su comprobante.</p>
+                        <p:commandButton id="btnRegistrarPago" value="Registrar pago y generar comprobante"
+                                         icon="pi pi-check" action="#{pagoBean.registrar}" ajax="false"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup id="sinForm" layout="block" styleClass="tzp-aviso"
+                                  rendered="#{not pagoBean.puedePagar}">
+                        <i class="pi pi-info-circle"></i>
+                        <h:outputText value="#{pagoBean.motivoSinPago}"/>
+                    </h:panelGroup>
+
+                </h:form>
+
+                <!-- ============ Historial de pagos ============ -->
+                <div class="tzp-form tzp-bloque">
+                    <h2 class="tzp-seccion">Historial de pagos</h2>
+
+                    <ui:repeat id="listaPagos" value="#{pagoBean.pagos}" var="c">
+                        <div class="tzp-pago">
+                            <span class="tzp-pago-num">N.º
+                                <h:outputText value="#{c.numeroCorrelativo}">
+                                    <f:convertNumber minIntegerDigits="6" groupingUsed="false"/>
+                                </h:outputText></span>
+                            <div>
+                                <strong><h:outputText value="#{c.concepto}"/></strong>
+                                <small>
+                                    <h:outputText value="#{c.pago.fecha}">
+                                        <f:convertDateTime type="localDate" pattern="dd/MM/yyyy"/>
+                                    </h:outputText>
+                                    · <h:outputText value="#{pagoBean.etiquetaMetodo(c.pago.metodo)}"/>
+                                    · Saldo restante: USD
+                                    <h:outputText value="#{c.saldoRestante}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                    </h:outputText>
+                                </small>
+                            </div>
+                            <span class="tzp-monto">USD
+                                <h:outputText value="#{c.importe}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText></span>
+                            <p:button id="btnVerComprobante" value="Ver comprobante" icon="pi pi-file"
+                                      outcome="/operario/comprobante.xhtml"
+                                      styleClass="ui-button-sm ui-button-outlined ui-button-secondary">
+                                <f:param name="id" value="#{c.id}"/>
+                            </p:button>
+                        </div>
+                    </ui:repeat>
+
+                    <h:panelGroup id="sinPagos" layout="block" styleClass="tzp-nota"
+                                  rendered="#{empty pagoBean.pagos}">
+                        Todavía no hay pagos registrados en esta reserva.
+                    </h:panelGroup>
+                </div>
+
+            </h:panelGroup>
+        </div>
+    </ui:define>
+
+</ui:composition>

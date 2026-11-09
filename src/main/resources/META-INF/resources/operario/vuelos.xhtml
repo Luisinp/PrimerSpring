@@ -1,0 +1,199 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="jakarta.faces.facelets"
+    template="../templates/template.xhtml">
+
+    <ui:define name="titulo">
+        Vuelos - TravelZen
+    </ui:define>
+
+    <ui:define name="bienvenida"/>
+
+    <ui:define name="contenido">
+        <h:outputStylesheet library="assets" name="css/vuelos.css" target="head"/>
+
+        <div class="tzv-pagina">
+
+            <div class="tzv-cabecera">
+                <h1 class="tzv-titulo">Vuelos</h1>
+                <p class="tzv-sub">Registra los vuelos internacionales con la tarifa y los asientos que informa el proveedor.</p>
+            </div>
+
+            <p:messages id="msgs" showDetail="false" closable="true"/>
+
+            <!-- ============ Formulario de alta y edición ============ -->
+            <h:panelGroup id="panelForm" layout="block" rendered="#{vueloBean.formularioAbierto}">
+                <h:form id="frmVuelo">
+
+                    <!-- Enter guarda el vuelo; nunca cancela ni borra nada -->
+                    <p:defaultCommand target="btnGuardar"/>
+
+                    <div class="tzv-panel">
+                        <h2 class="tzv-seccion">
+                            <h:outputText value="#{vueloBean.idEditando == null ? 'Nuevo vuelo' : 'Editar vuelo'}"/>
+                        </h2>
+
+                        <div class="tzv-campos">
+                            <div>
+                                <label class="tzv-lbl">Aerolínea (proveedor) *</label>
+                                <p:inputText id="aerolinea" value="#{vueloBean.aerolinea}" styleClass="w-full"
+                                             maxlength="80" placeholder="Ej.: BoA"/>
+                            </div>
+                            <div>
+                                <label class="tzv-lbl">Origen *</label>
+                                <p:inputText id="origen" value="#{vueloBean.origen}" styleClass="w-full"
+                                             maxlength="80" placeholder="Ej.: La Paz"/>
+                            </div>
+                            <div>
+                                <label class="tzv-lbl">Destino *</label>
+                                <p:inputText id="destino" value="#{vueloBean.destino}" styleClass="w-full"
+                                             maxlength="80" placeholder="Ej.: Lima"/>
+                            </div>
+                            <div>
+                                <label class="tzv-lbl">Fecha *</label>
+                                <p:datePicker id="fecha" value="#{vueloBean.fecha}" pattern="dd/MM/yyyy"
+                                              style="width:100%" inputStyle="width:100%"/>
+                            </div>
+                            <div>
+                                <label class="tzv-lbl">Hora (HH:mm) *</label>
+                                <p:inputMask id="hora" value="#{vueloBean.hora}" mask="99:99"
+                                             placeholder="08:30" styleClass="w-full"/>
+                            </div>
+                            <div>
+                                <label class="tzv-lbl">Tarifa por pasajero (USD) *</label>
+                                <p:inputNumber id="tarifa" value="#{vueloBean.tarifa}" decimalPlaces="2"
+                                               decimalSeparator="." thousandSeparator=","
+                                               minValue="0.01" style="width:100%" inputStyle="width:100%"/>
+                            </div>
+                            <div>
+                                <label class="tzv-lbl">Asientos disponibles *</label>
+                                <p:spinner id="asientos" value="#{vueloBean.asientos}" min="0" max="1000"
+                                           style="width:100%" inputStyle="width:100%"/>
+                            </div>
+                        </div>
+
+                        <p class="tzv-nota">La tarifa y la disponibilidad las informa el proveedor; se registran y se actualizan a mano.</p>
+
+                        <div class="tzv-botones">
+                            <p:commandButton id="btnGuardar" value="Guardar vuelo" icon="pi pi-check"
+                                             action="#{vueloBean.guardar}" ajax="false"/>
+                            <!-- Cancelar vuelve a cargar la página: descarta lo escrito -->
+                            <p:button id="btnCancelarForm" value="Cancelar" icon="pi pi-times"
+                                      outcome="/operario/vuelos.xhtml"
+                                      styleClass="ui-button-outlined ui-button-secondary"/>
+                        </div>
+                    </div>
+                </h:form>
+            </h:panelGroup>
+
+            <!-- ============ Resumen, filtros y lista ============ -->
+            <h:form id="frmLista">
+
+                <div class="tzv-resumen">
+                    <div class="tzv-chip tzv-chip-ACTIVO">
+                        <strong><h:outputText value="#{vueloBean.activos}"/></strong>
+                        <span>Vuelos activos</span>
+                    </div>
+                    <div class="tzv-chip tzv-chip-INACTIVO">
+                        <strong><h:outputText value="#{vueloBean.inactivos}"/></strong>
+                        <span>Vuelos inactivos</span>
+                    </div>
+                </div>
+
+                <div class="tzv-filtros">
+                    <div>
+                        <label class="tzv-lbl">Buscar</label>
+                        <p:inputText id="texto" value="#{vueloBean.texto}" styleClass="w-full"
+                                     placeholder="Aerolínea, origen o destino"/>
+                    </div>
+                    <div>
+                        <label class="tzv-lbl">Estado</label>
+                        <p:selectOneMenu id="estado" value="#{vueloBean.estado}" style="width:100%">
+                            <f:selectItem itemValue="TODOS" itemLabel="Todos"/>
+                            <f:selectItem itemValue="ACTIVOS" itemLabel="Activos"/>
+                            <f:selectItem itemValue="INACTIVOS" itemLabel="Inactivos"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="tzv-filtros-botones">
+                        <p:commandButton id="btnBuscar" value="Buscar" icon="pi pi-search"
+                                         action="#{vueloBean.buscar}" ajax="false"/>
+                        <p:commandButton id="btnLimpiar" value="Limpiar" icon="pi pi-times"
+                                         action="#{vueloBean.limpiar}" ajax="false"
+                                         styleClass="ui-button-outlined ui-button-secondary"/>
+                        <p:commandButton id="btnNuevo" value="Nuevo vuelo" icon="pi pi-plus"
+                                         action="#{vueloBean.nuevo}" ajax="false"
+                                         styleClass="ui-button-success"/>
+                    </div>
+                </div>
+
+                <ui:repeat id="lista" value="#{vueloBean.vuelos}" var="v">
+                    <article class="tzv-vuelo">
+
+                        <div class="tzv-vuelo-cab">
+                            <div class="tzv-ruta">
+                                <strong><h:outputText value="#{v.origen}"/></strong>
+                                <i class="pi pi-arrow-right"></i>
+                                <strong><h:outputText value="#{v.destino}"/></strong>
+                            </div>
+                            <span class="tzv-estado tzv-estado-#{v.activo ? 'ACTIVO' : 'INACTIVO'}">
+                                <h:outputText value="#{v.activo ? 'Activo' : 'Inactivo'}"/>
+                            </span>
+                        </div>
+
+                        <div class="tzv-datos">
+                            <span><i class="pi pi-send"></i>
+                                <h:outputText value="#{v.aerolinea}"/></span>
+                            <span><i class="pi pi-calendar"></i>
+                                <h:outputText value="#{v.fecha}">
+                                    <f:convertDateTime type="localDate" pattern="dd/MM/yyyy"/>
+                                </h:outputText></span>
+                            <span><i class="pi pi-clock"></i>
+                                <h:outputText value="#{v.hora}">
+                                    <f:convertDateTime type="localTime" pattern="HH:mm"/>
+                                </h:outputText></span>
+                            <span>Tarifa: <strong>USD
+                                <h:outputText value="#{v.tarifa}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText></strong></span>
+                            <span class="#{v.asientosDisponibles le 5 ? 'tzv-pocos' : ''}">Asientos:
+                                <strong><h:outputText value="#{v.asientosDisponibles}"/></strong></span>
+                            <h:panelGroup id="vencido" styleClass="tzv-vencido"
+                                          rendered="#{v.fecha.isBefore(vueloBean.hoy)}">
+                                Fecha vencida
+                            </h:panelGroup>
+                        </div>
+
+                        <div class="tzv-botones">
+                            <p:commandButton id="btnEditar" value="Editar" icon="pi pi-pencil"
+                                             action="#{vueloBean.editar(v.id)}" ajax="false"
+                                             styleClass="ui-button-secondary ui-button-outlined"/>
+                            <p:commandButton id="btnDesactivar" value="Desactivar" icon="pi pi-eye-slash"
+                                             action="#{vueloBean.desactivar(v.id)}" ajax="false"
+                                             rendered="#{v.activo}"
+                                             styleClass="ui-button-warning ui-button-outlined"/>
+                            <p:commandButton id="btnActivar" value="Activar" icon="pi pi-eye"
+                                             action="#{vueloBean.activar(v.id)}" ajax="false"
+                                             rendered="#{not v.activo}"
+                                             styleClass="ui-button-success ui-button-outlined"/>
+                            <p:commandButton id="btnEliminar" value="Eliminar" icon="pi pi-trash"
+                                             action="#{vueloBean.eliminar(v.id)}" ajax="false"
+                                             styleClass="ui-button-danger ui-button-outlined"
+                                             onclick="return confirm('¿Eliminar este vuelo? Solo se puede si no tiene reservas.');"/>
+                        </div>
+                    </article>
+                </ui:repeat>
+
+                <h:panelGroup id="vacio" layout="block" styleClass="tzv-vacio"
+                              rendered="#{empty vueloBean.vuelos}">
+                    <h3>No hay vuelos con esos filtros</h3>
+                    <p>Prueba con otra búsqueda o registra uno nuevo con el botón "Nuevo vuelo".</p>
+                </h:panelGroup>
+
+            </h:form>
+        </div>
+    </ui:define>
+
+</ui:composition>
